@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">生活U社区</string>
+    <string name="menu_settings">设置</string>
+    <string name="all_merchant">全部商户</string>
+    <string name="recommand_merchant">推荐商户</string>
+    <string name="nearby_merchant">附近商户</string>
+    <string name="popular_merchant">人气商户</string>
+    <string name="search">搜索</string>
+    <string name="about">关于</string>
+    <string name="hint_search">输入商户搜索</string>
+
+</resources>

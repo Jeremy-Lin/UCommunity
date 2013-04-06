@@ -1,0 +1,31 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".HomeActivity" >
+
+    <SearchView
+        android:id="@+id/searchview_merchant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:queryHint="@string/hint_search" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:gravity="top" >
+
+        <GridView
+            android:id="@+id/grid_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:horizontalSpacing="5dp"
+            android:numColumns="3"
+            android:verticalSpacing="30dp" />
+    </LinearLayout>
+
+</LinearLayout>
