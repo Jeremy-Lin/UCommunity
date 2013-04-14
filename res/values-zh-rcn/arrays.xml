@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Used in BigCategoryActivity.java -->
+    <string-array name="areas">
+        <item>全部商区</item>
+        <item>华东</item>
+        <item>华北</item>
+        <item>华南</item>
+        <item>东北</item>
+        <item>西南</item>
+    </string-array>
+
 </resources>

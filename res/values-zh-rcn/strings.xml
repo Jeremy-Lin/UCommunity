@@ -10,5 +10,6 @@
     <string name="search">搜索</string>
     <string name="about">关于</string>
     <string name="hint_search">输入商户搜索</string>
+    <string name="title_users_category">商户分类</string>
 
 </resources>
