@@ -1,23 +1,29 @@
+
 package com.inbuy.ucommunity.data;
 
 public class City {
-	private String mId;
-	private String mName;
+    private String mId;
+    private String mName;
 
-	public String getmId() {
-		return mId;
-	}
+    public City(String id, String name) {
+        mId = id;
+        mName = name;
+    }
 
-	public void setmId(String mId) {
-		this.mId = mId;
-	}
+    public String getmId() {
+        return mId;
+    }
 
-	public String getmName() {
-		return mName;
-	}
+    public void setmId(String mId) {
+        this.mId = mId;
+    }
 
-	public void setmName(String mName) {
-		this.mName = mName;
-	}
+    public String getmName() {
+        return mName;
+    }
+
+    public void setmName(String mName) {
+        this.mName = mName;
+    }
 
 }
