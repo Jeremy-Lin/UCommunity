@@ -29,6 +29,7 @@ import com.inbuy.ucommunity.data.City;
 import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
+import com.inbuy.ucommunity.util.Const;
 
 import java.util.ArrayList;
 
@@ -107,7 +108,12 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                 @Override
                 public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long arg3) {
                     Log.d(TAG, "OnItemSelectedListener: onItemSelected position = " + position);
-
+                    if (position >= mCityList.size() || position < 0) {
+                        Log.e(TAG, "onItemSelected: itemPosition is " + position
+                                + ", out of bound.");
+                        return;
+                    }
+                    mCurrentCity = mCityList.get(position);
                 }
 
                 @Override
@@ -161,8 +167,12 @@ public class HomeActivity extends Activity implements DataUpdateListener {
     }
 
     private void gotoBigCategoryActivity() {
+        if (mCurrentCity == null) {
+            return;
+        }
         Intent intent = new Intent();
         intent.setClass(this, BigCategoryActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
         this.startActivity(intent);
     }
 

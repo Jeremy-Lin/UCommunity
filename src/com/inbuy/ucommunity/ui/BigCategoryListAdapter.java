@@ -8,9 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.inbuy.ucommunity.R;
@@ -58,10 +56,8 @@ public class BigCategoryListAdapter extends ArrayAdapter<BigCategory> {
             convertView = li.inflate(LAYOUT_ID, parent, false);
 
             holder = new ViewHolder();
-            holder.mCheckbox = (CheckBox) convertView.findViewById(R.id.checkbox);
+            holder.mIcon = (ImageView) convertView.findViewById(R.id.img_icon);
             holder.mNameView = (TextView) convertView.findViewById(R.id.txt_title);
-
-            holder.mCheckbox.setOnCheckedChangeListener(mCheckedChangedListener);
 
             convertView.setTag(holder);
         } else {
@@ -72,20 +68,12 @@ public class BigCategoryListAdapter extends ArrayAdapter<BigCategory> {
             BigCategory category = mCategories.get(position);
             Log.d("", "category = " + category);
             holder.mNameView.setText(category.mName);
+            holder.mIcon.setImageDrawable(this.getContext().getResources()
+                    .getDrawable(R.drawable.ic_launcher));
         }
 
         return convertView;
     }
-
-    private OnCheckedChangeListener mCheckedChangedListener = new OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            // TODO Auto-generated method stub
-
-        }
-
-    };
 
     @Override
     public void notifyDataSetChanged() {
@@ -94,7 +82,7 @@ public class BigCategoryListAdapter extends ArrayAdapter<BigCategory> {
     }
 
     private class ViewHolder {
-        CheckBox mCheckbox;
+        ImageView mIcon;
         TextView mNameView;
     }
 

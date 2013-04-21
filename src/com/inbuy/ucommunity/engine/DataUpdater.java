@@ -3,6 +3,8 @@ package com.inbuy.ucommunity.engine;
 
 import android.util.Log;
 
+import com.inbuy.ucommunity.data.Area;
+import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
 import com.inbuy.ucommunity.util.JSONUtil;
 import com.inbuy.ucommunity.util.NetUtil;
@@ -36,7 +38,11 @@ public class DataUpdater {
 
     public final static int DATA_UPDATE_TYPE_CITIES = 0;
 
-    public final static int DATA_UPDATE_TYPE_MAX = 1;
+    public final static int DATA_UPDATE_TYPE_AREAES = 1;
+
+    public final static int DATA_UPDATE_TYPE_BIGCATES = 2;
+
+    public final static int DATA_UPDATE_TYPE_MAX = 3;
 
     // <request id, ServerDataRequest>
     private static Hashtable<Integer, ServerDataRequest> mServerDataRequests = new Hashtable<Integer, ServerDataRequest>();
@@ -138,6 +144,18 @@ public class DataUpdater {
         switch (dataType) {
             case DATA_UPDATE_TYPE_CITIES: {
                 requestId = mServerConnector.httpGet(NetUtil.getCityUrl(), dataType,
+                        mServerResponseListener);
+            }
+                break;
+            case DATA_UPDATE_TYPE_AREAES: {
+                if (arg != null && arg instanceof String) {
+                    requestId = mServerConnector.httpGet(NetUtil.getAreaUrl((String) arg),
+                            dataType, mServerResponseListener);
+                }
+            }
+                break;
+            case DATA_UPDATE_TYPE_BIGCATES: {
+                requestId = mServerConnector.httpGet(NetUtil.getBigCateUrl(), dataType,
                         mServerResponseListener);
             }
                 break;
@@ -257,6 +275,37 @@ public class DataUpdater {
                             Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_CITIES: cityList size = "
                                     + cityList.size());
                             DataModel.setCityListItems(cityList);
+                        }
+
+                        break;
+                    case DATA_UPDATE_TYPE_AREAES:
+                        if (response != null && response instanceof JSONArray) {
+                            ArrayList<Area> areaList = null;
+                            try {
+                                areaList = JSONUtil.parseResonseAreaList((JSONArray) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES: areaList size = "
+                                    + areaList.size());
+                            DataModel.setAreaListItems(areaList);
+                        }
+
+                        break;
+                    case DATA_UPDATE_TYPE_BIGCATES:
+                        if (response != null && response instanceof JSONArray) {
+                            ArrayList<BigCategory> bigcateList = null;
+                            try {
+                                bigcateList = JSONUtil
+                                        .parseResonseBigcateList((JSONArray) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_BIGCATES: bigcateList size = "
+                                    + bigcateList.size());
+                            DataModel.setBigCateListItems(bigcateList);
                         }
 
                         break;
