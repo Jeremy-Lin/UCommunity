@@ -149,8 +149,9 @@ public class DataUpdater {
                 break;
             case DATA_UPDATE_TYPE_AREAES: {
                 if (arg != null && arg instanceof String) {
-                    requestId = mServerConnector.httpGet(NetUtil.getAreaUrl((String) arg),
-                            dataType, mServerResponseListener);
+                    uuid = (String) arg;
+                    requestId = mServerConnector.httpGet(NetUtil.getAreaUrl(uuid), dataType,
+                            mServerResponseListener);
                 }
             }
                 break;
@@ -166,7 +167,8 @@ public class DataUpdater {
 
         synchronized (mServerDataRequests) {
             if (requestId != 0) {
-                mServerDataRequests.put(requestId, new ServerDataRequest(requestId, dataType));
+                mServerDataRequests
+                        .put(requestId, new ServerDataRequest(requestId, dataType, uuid));
 
                 // notify all data listeners the data loading status
                 synchronized (sDataUpdateListeners) {
@@ -199,6 +201,12 @@ public class DataUpdater {
         ServerDataRequest(int requestsId, int type) {
             mRequestId = requestsId;
             mDataType = type;
+        }
+
+        ServerDataRequest(int requestsId, int type, String uuid) {
+            mRequestId = requestsId;
+            mDataType = type;
+            mUuid = uuid;
         }
 
         ServerDataRequest(int requestsId, int type, int id, Object arg) {
@@ -289,7 +297,7 @@ public class DataUpdater {
                             }
                             Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES: areaList size = "
                                     + areaList.size());
-                            DataModel.setAreaListItems(areaList);
+                            DataModel.setAreaListItems(Integer.valueOf(request.mUuid), areaList);
                         }
 
                         break;

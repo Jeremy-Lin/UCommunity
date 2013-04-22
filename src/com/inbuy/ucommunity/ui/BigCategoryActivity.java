@@ -176,7 +176,7 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_READY:
                 mLoadingBar.setVisibility(View.GONE);
-                mAreaList = DataModel.getAreaListItems(mCurrentCityId);
+                mAreaList = DataModel.getAreaListItems(Integer.valueOf(mCurrentCityId));
                 for (Area area : mAreaList) {
                     mAreaNameList.add(area.mName);
                 }

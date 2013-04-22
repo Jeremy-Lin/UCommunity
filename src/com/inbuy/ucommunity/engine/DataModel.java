@@ -6,6 +6,7 @@ import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class DataModel {
     private static final String TAG = "DataModel";
@@ -14,11 +15,10 @@ public class DataModel {
     private static DataCachingItem sCityListItems = new DataCachingItem(
             DataUpdater.DATA_UPDATE_TYPE_CITIES);
 
-    private static DataCachingItem sAreaListItems = new DataCachingItem(
-            DataUpdater.DATA_UPDATE_TYPE_AREAES);
-
     private static DataCachingItem sBigCateListItems = new DataCachingItem(
             DataUpdater.DATA_UPDATE_TYPE_BIGCATES);
+
+    private static Hashtable<Integer, DataCachingItem> sAreaListItems = new Hashtable<Integer, DataCachingItem>();
 
     public static boolean checkDataOutOfDateStatus(DataCachingItem data) {
         if (data == null) {
@@ -74,30 +74,6 @@ public class DataModel {
         }
     }
 
-    public static ArrayList<Area> getAreaListItems(String cityId) {
-        if (sAreaListItems == null) {
-            sAreaListItems = new DataCachingItem(DataUpdater.DATA_UPDATE_TYPE_AREAES);
-        }
-
-        synchronized (sAreaListItems) {
-            ArrayList<Area> data = (ArrayList<Area>) sAreaListItems.getData();
-
-            if (data == null || checkDataOutOfDateStatus(sAreaListItems)) {
-                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAES, cityId);
-            }
-
-            if (data != null) {
-                ArrayList<Area> output = new ArrayList<Area>();
-                for (Area a : data) {
-                    output.add(a);
-                }
-                return output;
-            } else {
-                return new ArrayList<Area>();
-            }
-        }
-    }
-
     public static ArrayList<BigCategory> getBigCatesListItems() {
         if (sBigCateListItems == null) {
             sBigCateListItems = new DataCachingItem(DataUpdater.DATA_UPDATE_TYPE_BIGCATES);
@@ -140,19 +116,40 @@ public class DataModel {
     }
 
     /**
-     * Setter method of Area list
+     * Getter method of area list
      */
-    public static void setAreaListItems(ArrayList<Area> data) {
+    public static ArrayList<Area> getAreaListItems(int id) {
+        if (sAreaListItems == null) {
+            sAreaListItems = new Hashtable<Integer, DataCachingItem>();
+        }
+
+        synchronized (sAreaListItems) {
+            DataCachingItem data = sAreaListItems.get(id);
+
+            if (data == null || checkDataOutOfDateStatus(data)) {
+                String uid = String.valueOf(id);
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAES, uid);
+            }
+            if (data != null) {
+                return new ArrayList<Area>((ArrayList<Area>) data.getData());
+            } else {
+                return new ArrayList<Area>();
+            }
+        }
+    }
+
+    /**
+     * Setter method of area list
+     */
+    public static void setAreaListItems(int id, ArrayList<Area> data) {
         if (data == null) {
             return;
         }
 
-        if (sAreaListItems == null) {
-            sAreaListItems = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_AREAES);
-        } else {
-            synchronized (sAreaListItems) {
-                sAreaListItems.updateData(data);
-            }
+        synchronized (sAreaListItems) {
+            DataCachingItem items = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_AREAES);
+            if (items != null)
+                sAreaListItems.put(id, items);
         }
     }
 
