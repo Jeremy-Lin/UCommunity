@@ -6,6 +6,7 @@ import android.util.Log;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
+import com.inbuy.ucommunity.data.User;
 import com.inbuy.ucommunity.util.JSONUtil;
 import com.inbuy.ucommunity.util.NetUtil;
 
@@ -13,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 public class DataUpdater {
@@ -41,6 +43,8 @@ public class DataUpdater {
     public final static int DATA_UPDATE_TYPE_AREAES = 1;
 
     public final static int DATA_UPDATE_TYPE_BIGCATES = 2;
+
+    public final static int DATA_UPDATE_TYPE_USERS = 3;
 
     public final static int DATA_UPDATE_TYPE_MAX = 3;
 
@@ -158,6 +162,15 @@ public class DataUpdater {
             case DATA_UPDATE_TYPE_BIGCATES: {
                 requestId = mServerConnector.httpGet(NetUtil.getBigCateUrl(), dataType,
                         mServerResponseListener);
+            }
+                break;
+            case DATA_UPDATE_TYPE_USERS: {
+                if (arg != null && arg instanceof HashMap) {
+                    HashMap parm = (HashMap) arg;
+
+                    requestId = mServerConnector.httpGet(NetUtil.getUserUrl(parm), dataType,
+                            mServerResponseListener);
+                }
             }
                 break;
             default:
@@ -316,6 +329,20 @@ public class DataUpdater {
                             DataModel.setBigCateListItems(bigcateList);
                         }
 
+                        break;
+                    case DATA_UPDATE_TYPE_USERS:
+                        if (response != null && response instanceof JSONArray) {
+                            ArrayList<User> userList = null;
+                            try {
+                                userList = JSONUtil.parseResonseUserList((JSONArray) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_USERS. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_USERS: userList size = "
+                                    + userList.size());
+                            DataModel.setUserListItems(userList);
+                        }
                         break;
 
                     default:

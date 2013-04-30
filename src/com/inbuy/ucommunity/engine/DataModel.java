@@ -4,6 +4,7 @@ package com.inbuy.ucommunity.engine;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
+import com.inbuy.ucommunity.data.User;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -17,6 +18,9 @@ public class DataModel {
 
     private static DataCachingItem sBigCateListItems = new DataCachingItem(
             DataUpdater.DATA_UPDATE_TYPE_BIGCATES);
+
+    private static DataCachingItem sUserListItems = new DataCachingItem(
+            DataUpdater.DATA_UPDATE_TYPE_USERS);
 
     private static Hashtable<Integer, DataCachingItem> sAreaListItems = new Hashtable<Integer, DataCachingItem>();
 
@@ -94,6 +98,47 @@ public class DataModel {
                 return output;
             } else {
                 return new ArrayList<BigCategory>();
+            }
+        }
+    }
+
+    public static ArrayList<User> getUserListItems() {
+        if (sUserListItems == null) {
+            sUserListItems = new DataCachingItem(DataUpdater.DATA_UPDATE_TYPE_USERS);
+        }
+
+        synchronized (sUserListItems) {
+            ArrayList<User> data = (ArrayList<User>) sUserListItems.getData();
+
+            if (data == null) {
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USERS, null);
+            }
+
+            if (data != null) {
+                ArrayList<User> output = new ArrayList<User>();
+                for (User a : data) {
+                    output.add(a);
+                }
+                return output;
+            } else {
+                return new ArrayList<User>();
+            }
+        }
+    }
+
+    /**
+     * Setter method of user list
+     */
+    public static void setUserListItems(ArrayList<User> data) {
+        if (data == null) {
+            return;
+        }
+
+        if (sUserListItems == null) {
+            sUserListItems = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_USERS);
+        } else {
+            synchronized (sUserListItems) {
+                sUserListItems.updateData(data);
             }
         }
     }

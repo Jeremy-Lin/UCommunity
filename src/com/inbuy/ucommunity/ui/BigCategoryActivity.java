@@ -3,6 +3,7 @@ package com.inbuy.ucommunity.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -36,7 +38,7 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
     private static final int MSG_DATA_UPDATE = 2;
 
     private ListView mBigCategoryList;
-    private Spinner mCategorySpinner;
+    private Spinner mAreaSpinner;
     private ProgressBar mLoadingBar;
 
     ArrayAdapter<String> mAreaAdapter;
@@ -49,6 +51,9 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
 
     private String mCurrentCityId;
 
+    private int mAreaPosition;
+    private int mBigCatePosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -60,7 +65,7 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
 
         setupActionbar();
         mBigCategoryList = (ListView) this.findViewById(R.id.list_users);
-        mCategorySpinner = (Spinner) this.findViewById(R.id.spinner);
+        mAreaSpinner = (Spinner) this.findViewById(R.id.spinner);
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
 
         mCurrentCityId = this.getIntent().getStringExtra(Const.EXTRA_CITY_ID);
@@ -96,40 +101,47 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
                 mAreaNameList);
 
         mAreaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mCategorySpinner.setAdapter(mAreaAdapter);
+        mAreaSpinner.setAdapter(mAreaAdapter);
 
-        mCategorySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // TODO
-            }
-
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
+        mAreaSpinner.setOnItemSelectedListener(mAreaItemSelectedListener);
 
     }
 
-    private ArrayList<BigCategory> getBigCategoryList() {
-        // For test.
-        ArrayList<BigCategory> categories = new ArrayList<BigCategory>();
-        String[] cateNames = {
-                "教育培训", "母婴早教", "婚礼婚庆", "驾照、汽车", "运动健身", "旅游", "美容美体", "健康医疗"
-        };
-
-        BigCategory category = null;
-        for (int i = 0; i < cateNames.length; i++) {
-            category = new BigCategory(String.valueOf(i), cateNames[i]);
-            categories.add(category);
+    private OnItemSelectedListener mAreaItemSelectedListener = new OnItemSelectedListener() {
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            mAreaPosition = position;
         }
 
-        return categories;
-    }
+        public void onNothingSelected(AdapterView<?> parent) {
+            mAreaPosition = 0;
+        }
+    };
 
     private void setupListview() {
         mBigCategories = DataModel.getBigCatesListItems();
         Log.d(TAG, "setupListview: mBigCategories = " + mBigCategories);
         mBigCateAdapter = new BigCategoryListAdapter(this, mBigCategories, mHanlder);
         mBigCategoryList.setAdapter(mBigCateAdapter);
+        mBigCategoryList.setOnItemClickListener(mBigCateItemClickListener);
+    }
+
+    private OnItemClickListener mBigCateItemClickListener = new OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+            mBigCatePosition = position;
+            gotoUserListScreen();
+        }
+
+    };
+
+    private void gotoUserListScreen() {
+        Intent intent = new Intent();
+        intent.setClass(this, UserListActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCityId);
+        intent.putExtra(Const.EXTRA_AREA_POSITION, mAreaPosition);
+        intent.putExtra(Const.EXTRA_BIGCATE_POSITION, mBigCatePosition);
+        this.startActivity(intent);
     }
 
     @Override

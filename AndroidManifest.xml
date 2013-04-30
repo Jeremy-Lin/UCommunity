@@ -28,6 +28,8 @@
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.HomeActivity" >
         </activity>
+        <activity android:name="com.inbuy.ucommunity.ui.UserListActivity" >
+        </activity>
     </application>
 
 </manifest>

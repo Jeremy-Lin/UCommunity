@@ -3,6 +3,8 @@ package com.inbuy.ucommunity.util;
 
 import android.util.Log;
 
+import java.util.HashMap;
+
 public class NetUtil {
     private static final String TAG = "NetUtil";
 
@@ -74,4 +76,44 @@ public class NetUtil {
         return url;
     }
 
+    public static String getUserUrl(HashMap<String, String> ids) {
+        StringBuffer sb = new StringBuffer(URL_API_SERVER);
+        sb.append(ACTION_SEARCH_USER).append(DELIMITER).append(PARAM_NAME_APPKEY).append(DELIMITER)
+                .append(APP_KEY).append(DELIMITER).append(PARAM_NAME_APPSECRET).append(DELIMITER)
+                .append(APP_SECRET);
+
+        if (ids == null) {
+            return sb.toString();
+        }
+
+        String cityId = ids.get(PARAM_NAME_CITY);
+
+        if (cityId != null && !cityId.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_CITY).append(DELIMITER).append(cityId);
+        }
+
+        String xzId = ids.get(PARAM_NAME_XZ);
+        if (xzId != null && !xzId.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_XZ).append(DELIMITER).append(xzId);
+        }
+
+        String busId = ids.get(PARAM_NAME_BUS);
+        if (busId != null && !busId.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_BUS).append(DELIMITER).append(busId);
+        }
+
+        String bigCateId = ids.get(PARAM_NAME_BCATE);
+        if (bigCateId != null && !bigCateId.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_BCATE).append(DELIMITER).append(bigCateId);
+        }
+
+        String smallCateId = ids.get(PARAM_NAME_SCATE);
+        if (smallCateId != null && !smallCateId.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_SCATE).append(DELIMITER).append(smallCateId);
+        }
+        String url = sb.toString();
+        Log.d(TAG, "searchUserUrl: url = " + url);
+
+        return url;
+    }
 }
