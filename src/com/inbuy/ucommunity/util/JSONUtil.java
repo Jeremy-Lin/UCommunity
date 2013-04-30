@@ -118,6 +118,8 @@ public class JSONUtil {
             user.mNew = resultObject.getInt("new");
             user.mInfo = resultObject.getString("info");
             user.mCreateTime = resultObject.getLong("create_time");
+            user.mPhone = resultObject.getString("phone");
+            user.mCardPhone = resultObject.getString("card_phone");
 
             Log.d(TAG, "parseResonseUserList: i = " + i + " name = " + user.mName + " id = "
                     + user.mId);
@@ -126,6 +128,45 @@ public class JSONUtil {
         }
 
         return userList;
+    }
+
+    public static User parseResonseUserItem(JSONObject jsonObiect) throws JSONException {
+        if (jsonObiect == null) {
+            return null;
+        }
+
+        Log.d(TAG, "parseResonseUserList: jsonObiect = " + jsonObiect);
+        User user = new User();
+        JSONObject resultObject = jsonObiect;
+        user.mName = resultObject.getString("name");
+        user.mId = resultObject.getString("id");
+        user.mAddress = resultObject.getString("address");
+        user.mBigCateId = resultObject.getString("b_cate");
+        user.mBank = resultObject.getString("bank");
+        user.mSmallCateId = resultObject.getString("s_cate");
+        user.mBusId = resultObject.getString("bus");
+        user.mCityId = resultObject.getString("city");
+        user.mXzId = resultObject.getString("xz");
+        user.mStar = resultObject.getString("star");
+        user.mDes = resultObject.getString("des");
+        user.mTag = resultObject.getString("tag");
+        user.mFckCardOne = resultObject.getString("fck_card_one");
+        user.mFckCardMore = resultObject.getString("fck_card_more");
+        user.mInfo = resultObject.getString("info");
+        user.mLng = resultObject.getString("lng");
+        user.mLat = resultObject.getString("lat");
+        user.mTj = resultObject.getInt("tj");
+        user.mRq = resultObject.getInt("rq");
+        user.mNew = resultObject.getInt("new");
+        user.mInfo = resultObject.getString("info");
+        user.mCreateTime = resultObject.getLong("create_time");
+
+        user.mPhone = resultObject.getString("phone");
+        user.mCardPhone = resultObject.getString("card_phone");
+
+        Log.d(TAG, "parseResonseUserList: " + " name = " + user.mName + " id = " + user.mId);
+
+        return user;
     }
 
 }

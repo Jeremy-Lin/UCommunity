@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -95,8 +96,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
     private void setupActionBar() {
         ActionBar actionbar = this.getActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
-        int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_HOME
-                ^ ActionBar.DISPLAY_SHOW_TITLE;
+        int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
         actionbar.setDisplayShowCustomEnabled(true);
 
@@ -191,6 +191,24 @@ public class UserListActivity extends Activity implements DataUpdateListener {
 
         mUserListView.setAdapter(mUserListAdapter);
 
+        mUserListView.setOnItemClickListener(mUserItemClickListener);
+
+    }
+
+    private OnItemClickListener mUserItemClickListener = new OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
+            gotoUserIntroduceScreen(position);
+        }
+
+    };
+
+    private void gotoUserIntroduceScreen(int position) {
+        Intent intent = new Intent();
+        intent.setClass(this, UserIntroduceActivity.class);
+        intent.putExtra(Const.EXTRA_USER_ID, mUserList.get(position).mId);
+        this.startActivity(intent);
     }
 
     @Override

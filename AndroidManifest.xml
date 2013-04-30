@@ -30,6 +30,10 @@
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.UserListActivity" >
         </activity>
+        <activity android:name="com.inbuy.ucommunity.ui.UserIntroduceActivity" >
+        </activity>
+        <activity android:name="com.inbuy.ucommunity.ui.UserDetailActivity" >
+        </activity>
     </application>
 
 </manifest>

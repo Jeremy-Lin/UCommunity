@@ -78,10 +78,10 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
 
     private void setupActionbar() {
         ActionBar actionbar = this.getActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_HOME
-                ^ ActionBar.DISPLAY_SHOW_TITLE;
+        int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
+
+        actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setDisplayShowCustomEnabled(true);
 
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);

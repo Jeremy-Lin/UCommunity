@@ -19,6 +19,8 @@ public class User {
     public String mInfo;
     public String mLng;
     public String mLat;
+    public String mPhone;
+    public String mCardPhone;
     public int mTj;
     public int mRq;
     public long mCreateTime;

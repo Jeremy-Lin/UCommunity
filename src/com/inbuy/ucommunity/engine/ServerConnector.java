@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -169,16 +170,29 @@ public class ServerConnector implements Runnable {
             Log.d("PERF", "httpGet=" + (t2 - t1));
         }
         Log.d(TAG, "reponse result = " + result);
-        JSONArray obj = null;
+
+        Object obj = null;
+
         if (result != null) {
-            try {
-                obj = new JSONArray(result);
-            } catch (JSONException e) {
-                ecode = ErrorCode.INTERNAL_ERROR;
-                e.printStackTrace();
-                Log.e(TAG,
-                        "Request ID=" + requestId + ", url=" + url + ", error message = "
-                                + e.getMessage());
+            if (dataType == DataUpdater.DATA_UPDATE_TYPE_USER) {
+                try {
+                    obj = new JSONObject(result);
+                } catch (JSONException e) {
+                    ecode = ErrorCode.INTERNAL_ERROR;
+                    e.printStackTrace();
+                    Log.e(TAG, "Request ID=" + requestId + ", url=" + url + ", error message = "
+                            + e.getMessage());
+                }
+
+            } else {
+                try {
+                    obj = new JSONArray(result);
+                } catch (JSONException e) {
+                    ecode = ErrorCode.INTERNAL_ERROR;
+                    e.printStackTrace();
+                    Log.e(TAG, "Request ID=" + requestId + ", url=" + url + ", error message = "
+                            + e.getMessage());
+                }
             }
         }
 

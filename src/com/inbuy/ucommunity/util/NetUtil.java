@@ -76,7 +76,20 @@ public class NetUtil {
         return url;
     }
 
-    public static String getUserUrl(HashMap<String, String> ids) {
+    public static String getPersonUrl(String uid) {
+        StringBuffer sb = new StringBuffer(URL_API_SERVER);
+        sb.append(ACTION_GET_PERSON).append(DELIMITER).append(PARAM_NAME_APPKEY).append(DELIMITER)
+                .append(APP_KEY).append(DELIMITER).append(PARAM_NAME_APPSECRET).append(DELIMITER)
+                .append(APP_SECRET).append(DELIMITER).append(PARAM_NAME_ID).append(DELIMITER)
+                .append(uid);
+
+        String url = sb.toString();
+        Log.d(TAG, "getPersonUrl: url = " + url);
+
+        return url;
+    }
+
+    public static String getUsersListUrl(HashMap<String, String> ids) {
         StringBuffer sb = new StringBuffer(URL_API_SERVER);
         sb.append(ACTION_SEARCH_USER).append(DELIMITER).append(PARAM_NAME_APPKEY).append(DELIMITER)
                 .append(APP_KEY).append(DELIMITER).append(PARAM_NAME_APPSECRET).append(DELIMITER)

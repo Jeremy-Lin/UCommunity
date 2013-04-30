@@ -58,7 +58,7 @@ public class UserListAdapter extends ArrayAdapter<User> {
             holder.mStarIcon = (ImageView) convertView.findViewById(R.id.img_star);
             holder.mNameView = (TextView) convertView.findViewById(R.id.txt_name);
             holder.mPriceView = (TextView) convertView.findViewById(R.id.txt_price);
-            holder.mTagView = (TextView) convertView.findViewById(R.id.txt_note);
+            holder.mTagView = (TextView) convertView.findViewById(R.id.txt_tag);
 
             convertView.setTag(holder);
         } else {

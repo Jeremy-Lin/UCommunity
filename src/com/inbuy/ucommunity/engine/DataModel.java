@@ -22,6 +22,9 @@ public class DataModel {
     private static DataCachingItem sUserListItems = new DataCachingItem(
             DataUpdater.DATA_UPDATE_TYPE_USERS);
 
+    private static DataCachingItem sUserItem = new DataCachingItem(
+            DataUpdater.DATA_UPDATE_TYPE_USER);
+
     private static Hashtable<Integer, DataCachingItem> sAreaListItems = new Hashtable<Integer, DataCachingItem>();
 
     public static boolean checkDataOutOfDateStatus(DataCachingItem data) {
@@ -139,6 +142,35 @@ public class DataModel {
         } else {
             synchronized (sUserListItems) {
                 sUserListItems.updateData(data);
+            }
+        }
+    }
+
+    public static User getUserItem() {
+        if (sUserItem == null) {
+            sUserItem = new DataCachingItem(DataUpdater.DATA_UPDATE_TYPE_USER);
+        }
+
+        synchronized (sUserItem) {
+            User data = (User) sUserItem.getData();
+
+            return data;
+        }
+    }
+
+    /**
+     * Setter method of user item
+     */
+    public static void setUserItem(User data) {
+        if (data == null) {
+            return;
+        }
+
+        if (sUserItem == null) {
+            sUserItem = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_USER);
+        } else {
+            synchronized (sUserItem) {
+                sUserItem.updateData(data);
             }
         }
     }

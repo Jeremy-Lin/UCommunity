@@ -12,6 +12,7 @@ import com.inbuy.ucommunity.util.NetUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +47,9 @@ public class DataUpdater {
 
     public final static int DATA_UPDATE_TYPE_USERS = 3;
 
-    public final static int DATA_UPDATE_TYPE_MAX = 3;
+    public final static int DATA_UPDATE_TYPE_USER = 4;
+
+    public final static int DATA_UPDATE_TYPE_MAX = 5;
 
     // <request id, ServerDataRequest>
     private static Hashtable<Integer, ServerDataRequest> mServerDataRequests = new Hashtable<Integer, ServerDataRequest>();
@@ -168,7 +171,15 @@ public class DataUpdater {
                 if (arg != null && arg instanceof HashMap) {
                     HashMap parm = (HashMap) arg;
 
-                    requestId = mServerConnector.httpGet(NetUtil.getUserUrl(parm), dataType,
+                    requestId = mServerConnector.httpGet(NetUtil.getUsersListUrl(parm), dataType,
+                            mServerResponseListener);
+                }
+            }
+                break;
+            case DATA_UPDATE_TYPE_USER: {
+                if (arg != null && arg instanceof String) {
+                    uuid = (String) arg;
+                    requestId = mServerConnector.httpGet(NetUtil.getPersonUrl(uuid), dataType,
                             mServerResponseListener);
                 }
             }
@@ -342,6 +353,19 @@ public class DataUpdater {
                             Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_USERS: userList size = "
                                     + userList.size());
                             DataModel.setUserListItems(userList);
+                        }
+                        break;
+                    case DATA_UPDATE_TYPE_USER:
+                        if (response != null && response instanceof JSONObject) {
+                            User user = null;
+                            try {
+                                user = JSONUtil.parseResonseUserItem((JSONObject) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_USER. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_USER: user = " + user);
+                            DataModel.setUserItem(user);
                         }
                         break;
 
