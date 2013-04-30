@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/home_bg"
     android:orientation="vertical"
     tools:context=".HomeActivity" >
 
@@ -9,6 +10,7 @@
         android:id="@+id/searchview_merchant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/search_bar_bg"
         android:queryHint="@string/hint_search" />
 
     <LinearLayout
@@ -22,6 +24,7 @@
             android:id="@+id/grid_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/home_grid_bg"
             android:gravity="center"
             android:horizontalSpacing="5dp"
             android:numColumns="3"

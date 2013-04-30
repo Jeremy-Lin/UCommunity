@@ -20,6 +20,7 @@ public class SplashActivity extends Activity implements DataUpdateListener {
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
+
         this.setContentView(R.layout.activity_splash);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_CITIES, this);
         DataUpdater.init();

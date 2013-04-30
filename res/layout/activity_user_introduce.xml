@@ -26,8 +26,8 @@
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#000000" />
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_divider" />
             </LinearLayout>
 
             <LinearLayout
@@ -60,8 +60,8 @@
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#000000" />
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_divider" />
             </LinearLayout>
 
             <LinearLayout
@@ -104,8 +104,8 @@
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#000000" />
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_divider" />
             </LinearLayout>
 
             <LinearLayout
@@ -152,8 +152,8 @@
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#000000" />
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_divider" />
             </LinearLayout>
 
             <LinearLayout
@@ -198,8 +198,8 @@
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#000000" />
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_divider" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

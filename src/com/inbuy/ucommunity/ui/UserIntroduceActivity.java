@@ -79,6 +79,9 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
 
     private void setupActionbar() {
         ActionBar actionbar = this.getActionBar();
+
+        actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
+
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
 
@@ -91,7 +94,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         actionbar.setCustomView(customView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) customView.getLayoutParams();
-        lp.gravity &= Gravity.CENTER_HORIZONTAL;
+        lp.gravity &= Gravity.CENTER;
         actionbar.setCustomView(customView, lp);
     }
 

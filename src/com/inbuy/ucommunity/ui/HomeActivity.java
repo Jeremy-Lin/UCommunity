@@ -21,7 +21,6 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.SearchView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Category;
@@ -77,6 +76,8 @@ public class HomeActivity extends Activity implements DataUpdateListener {
 
         ActionBar actionbar = this.getActionBar();
 
+        actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
+
         actionbar.setCustomView(mCustomView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) mCustomView.getLayoutParams();
@@ -97,11 +98,13 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                 cities[i] = String.format(titleFormat, name);
             }
 
-            SpinnerAdapter adapter = new ArrayAdapter<String>(this,
-                    android.R.layout.simple_spinner_item, cities);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                    R.layout.home_actionbar_spinner_item, cities);
 
             Spinner spinner = (Spinner) mCustomView.findViewById(R.id.spinner);
             spinner.setAdapter(adapter);
+
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
             spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
@@ -124,23 +127,6 @@ public class HomeActivity extends Activity implements DataUpdateListener {
 
             });
 
-            // actionbar.setListNavigationCallbacks(adapter, new
-            // OnNavigationListener() {
-            //
-            // @Override
-            // public boolean onNavigationItemSelected(int itemPosition, long
-            // itemId) {
-            // // TODO Auto-generated method stub
-            // if (itemPosition >= mCityList.size() || itemPosition < 0) {
-            // Log.e(TAG, "itemPosition is " + itemPosition +
-            // ", out of bound.");
-            // return false;
-            // }
-            // mCurrentCity = mCityList.get(itemPosition);
-            // return false;
-            // }
-            //
-            // });
         }
     }
 
@@ -183,8 +169,8 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                 R.string.recommand_merchant, R.string.popular_merchant, R.string.about
         };
         int[] logoIds = {
-                R.drawable.ic_launcher, R.drawable.ic_launcher, R.drawable.ic_launcher,
-                R.drawable.ic_launcher, R.drawable.ic_launcher, R.drawable.ic_launcher,
+                R.drawable.ic_all_user, R.drawable.ic_nearby_user, R.drawable.ic_search_user,
+                R.drawable.ic_recommand_user, R.drawable.ic_popu_user, R.drawable.ic_about,
         };
 
         Resources res = this.getResources();
@@ -211,7 +197,6 @@ public class HomeActivity extends Activity implements DataUpdateListener {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
 

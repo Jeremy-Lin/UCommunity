@@ -194,6 +194,8 @@ public class ServerConnector implements Runnable {
                             + e.getMessage());
                 }
             }
+        } else {
+            obj = null;
         }
 
         if (listener != null) {
@@ -211,6 +213,8 @@ public class ServerConnector implements Runnable {
             throws UnsupportedEncodingException, IllegalStateException, IOException {
 
         int length = (int) httpEntity.getContentLength();
+        Log.d(TAG, "retrieveInputStream: length = " + length);
+
         // the number of bytes of the content, or a negative number if unknown.
         // If the content length is known but exceeds Long.MAX_VALUE, a negative
         // number is returned.
@@ -218,13 +222,15 @@ public class ServerConnector implements Runnable {
         if (length < 0) {
             Log.e(TAG, "length = " + length);
             length = 10000;
+        } else if (length == 0) {
+            return null;
         }
         StringBuffer stringBuffer = new StringBuffer(length);
         InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(),
                 HTTP.UTF_8);
         char buffer[] = new char[length];
         int count;
-        while ((count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
+        while (length > 0 && (count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
             stringBuffer.append(buffer, 0, count);
         }
         return stringBuffer.toString();

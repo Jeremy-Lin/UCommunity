@@ -11,7 +11,8 @@
         <LinearLayout
             android:id="@+id/group_spinners"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:background="@drawable/header_bar_bg" >
 
             <Spinner
                 android:id="@+id/spinner_left"
@@ -19,11 +20,21 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_vertical_divider" />
+
             <Spinner
                 android:id="@+id/spinner_middle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_vertical_divider" />
 
             <Spinner
                 android:id="@+id/spinner_right"
@@ -31,11 +42,18 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
+        
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_divider" />
 
         <ListView
             android:id="@+id/list_users"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:divider="@drawable/ic_divider"
+            android:listSelector="@null" />
     </LinearLayout>
 
     <ProgressBar

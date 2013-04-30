@@ -353,6 +353,9 @@ public class DataUpdater {
                             Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_USERS: userList size = "
                                     + userList.size());
                             DataModel.setUserListItems(userList);
+                        } else if (response == null) {
+                            ArrayList<User> userList = new ArrayList<User>();
+                            DataModel.setUserListItems(userList);
                         }
                         break;
                     case DATA_UPDATE_TYPE_USER:
