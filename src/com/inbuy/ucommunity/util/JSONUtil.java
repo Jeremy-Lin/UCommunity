@@ -120,6 +120,9 @@ public class JSONUtil {
             user.mCreateTime = resultObject.getLong("create_time");
             user.mPhone = resultObject.getString("phone");
             user.mCardPhone = resultObject.getString("card_phone");
+            user.mImageUrl = resultObject.getString("img");
+            user.mThumbImg1 = resultObject.getString("thumb_img1");
+            user.mThumbImg2 = resultObject.getString("thumb_img2");
 
             Log.d(TAG, "parseResonseUserList: i = " + i + " name = " + user.mName + " id = "
                     + user.mId);

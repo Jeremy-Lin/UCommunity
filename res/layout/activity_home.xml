@@ -6,12 +6,37 @@
     android:orientation="vertical"
     tools:context=".HomeActivity" >
 
-    <SearchView
+    <!--
+         <SearchView
         android:id="@+id/searchview_merchant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/search_bar_bg"
         android:queryHint="@string/hint_search" />
+    -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/search_bar_bg" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20dp"
+            android:focusableInTouchMode="true"
+            android:src="@drawable/ic_search" />
+
+        <EditText
+            android:id="@+id/edit_search_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:background="@null"
+            android:hint="@string/hint_search" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

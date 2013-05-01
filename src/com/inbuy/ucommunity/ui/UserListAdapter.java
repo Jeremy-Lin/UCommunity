@@ -2,6 +2,7 @@
 package com.inbuy.ucommunity.ui;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.User;
+import com.inbuy.ucommunity.engine.DataUpdater;
+import com.inbuy.ucommunity.util.Util;
 
 import java.util.ArrayList;
 
@@ -71,15 +74,35 @@ public class UserListAdapter extends ArrayAdapter<User> {
             holder.mTagView.setText(user.mTag);
             holder.mPriceView.setText(user.mDes);
 
-            setUserPhotoView();
+            setUserPhotoView(user, holder.mPhoto);
             setUserStarView();
         }
 
         return convertView;
     }
 
-    private void setUserPhotoView() {
-        // TODO
+    private void setUserPhotoView(User user, ImageView photo) {
+        Drawable drawable = null;
+
+        if (photo != null) {
+            drawable = Util.getUserPhotoDrawable(getContext(), user.mId, R.drawable.user_default);
+
+            if (drawable != null) {
+                photo.setImageDrawable(drawable);
+            } else {
+                photo.setImageResource(R.drawable.user_default);
+
+                if (user != null) {
+                    String photoUrl = user.mImageUrl;
+                    int index = photoUrl.indexOf(";");
+                    String imgUrl = photoUrl.substring(0, index);
+                    Object[] args = {
+                            user.mId, imgUrl
+                    };
+                    DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, args);
+                }
+            }
+        }
     }
 
     private void setUserStarView() {

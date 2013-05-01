@@ -9,11 +9,14 @@ import com.inbuy.ucommunity.data.City;
 import com.inbuy.ucommunity.data.User;
 import com.inbuy.ucommunity.util.JSONUtil;
 import com.inbuy.ucommunity.util.NetUtil;
+import com.inbuy.ucommunity.util.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -49,7 +52,9 @@ public class DataUpdater {
 
     public final static int DATA_UPDATE_TYPE_USER = 4;
 
-    public final static int DATA_UPDATE_TYPE_MAX = 5;
+    public final static int DATA_UPDATE_TYPE_USER_PHOTO = 5;
+
+    public final static int DATA_UPDATE_TYPE_MAX = 6;
 
     // <request id, ServerDataRequest>
     private static Hashtable<Integer, ServerDataRequest> mServerDataRequests = new Hashtable<Integer, ServerDataRequest>();
@@ -184,6 +189,22 @@ public class DataUpdater {
                 }
             }
                 break;
+            case DATA_UPDATE_TYPE_USER_PHOTO: {
+                if (arg != null) {
+                    Object[] args = (Object[]) arg;
+                    uuid = (String) args[0];
+                    String userImgUrl = (String) args[1];
+
+                    String downloadPath = Util.getUserPhotoDownloadPath(uuid);
+
+                    FileOutputStream fileOutput = Util.createFileOutputStream(downloadPath);
+
+                    if (fileOutput != null) {
+                        requestId = mServerConnector.httpGet(NetUtil.getPhotoUrl(userImgUrl),
+                                dataType, fileOutput, mServerResponseListener);
+                    }
+                }
+            }
             default:
                 break;
 
@@ -371,7 +392,20 @@ public class DataUpdater {
                             DataModel.setUserItem(user);
                         }
                         break;
+                    case DATA_UPDATE_TYPE_USER_PHOTO: {
+                        if (response != null && response instanceof OutputStream) {
+                            Util.closeFileOutputStream((FileOutputStream) response);
+                            String uuid = request.mUuid;
 
+                            if (!Util.checkUserDownloadPhoto(uuid)) {
+                                successed = false;
+                            } else {
+                                String downloadPath = Util.getUserPhotoDownloadPath(uuid);
+                                Util.renameDownloadFile(downloadPath);
+                            }
+                        }
+                    }
+                        break;
                     default:
                         break;
                 }
@@ -391,6 +425,17 @@ public class DataUpdater {
             }
 
             mServerDataRequests.remove(requestId);
+        }
+    }
+
+    // clear all data in local caching
+    public static void clearAll() {
+        synchronized (sDataUpdateListeners) {
+            sDataUpdateListeners.clear();
+        }
+
+        synchronized (mServerDataRequests) {
+            mServerDataRequests.clear();
         }
     }
 

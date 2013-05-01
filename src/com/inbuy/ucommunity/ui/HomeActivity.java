@@ -18,8 +18,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.SearchView;
 import android.widget.Spinner;
 
 import com.inbuy.ucommunity.R;
@@ -29,6 +29,7 @@ import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
 import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.Util;
 
 import java.util.ArrayList;
 
@@ -37,7 +38,7 @@ public class HomeActivity extends Activity implements DataUpdateListener {
     private static final int MSG_DATA_UPDATE = 0;
     private static final int MSG_CITY_CHANGED = 1;
 
-    private SearchView mSearchView;
+    private EditText mSearchView;
     private GridView mGridView;
     private HomeGridAdapter mAdapter;
     private ArrayList<City> mCityList;
@@ -130,8 +131,17 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        // TODO Auto-generated method stub
+
+        Util.deleteAllFiles(Util.getDataPhotoPath(), null);
+        Util.deleteAllFiles(Util.getDataPhotoPath(), Util.WINDATA_DOWNLOAD_SUFFIX);
+        super.onDestroy();
+    }
+
     private void initViewsRes() {
-        mSearchView = (SearchView) this.findViewById(R.id.searchview_merchant);
+        mSearchView = (EditText) this.findViewById(R.id.edit_search_user);
         mGridView = (GridView) this.findViewById(R.id.grid_categories);
 
         mGridView.setOnItemClickListener(new OnItemClickListener() {

@@ -26,6 +26,7 @@ public class NetUtil {
     public static final String PARAM_NAME_ID = "id";
 
     // url and actions
+    public static final String URL_SERVER = "Http://www.Inbuy360.com/";
     public static final String URL_API_SERVER = "Http://www.Inbuy360.com/api.php/Api/";
     public static final String ACTION_GET_USER = "getUser";
     public static final String ACTION_GET_CITY = "getCity";
@@ -38,6 +39,12 @@ public class NetUtil {
     public static final String ACTION_GET_AREANAME = "getAreaName";
 
     public static final String DELIMITER = "/";
+
+    public static String getPhotoUrl(String imgUrl) {
+        StringBuffer sb = new StringBuffer(URL_SERVER);
+        sb.append(imgUrl);
+        return sb.toString();
+    }
 
     public static String getCityUrl() {
         StringBuffer sb = new StringBuffer(URL_API_SERVER);

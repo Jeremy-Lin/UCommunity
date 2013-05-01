@@ -289,4 +289,38 @@ public class DataModel {
             return mDataType;
         }
     }
+
+    // clear all data in local caching
+    public static void clearAll() {
+        if (sCityListItems != null) {
+            synchronized (sCityListItems) {
+                sCityListItems.clearData();
+            }
+        }
+
+        if (sBigCateListItems != null) {
+            synchronized (sBigCateListItems) {
+                sBigCateListItems.clearData();
+            }
+        }
+
+        if (sUserListItems != null) {
+            synchronized (sUserListItems) {
+                sUserListItems.clearData();
+            }
+        }
+
+        if (sUserItem != null) {
+            synchronized (sUserItem) {
+                sUserItem.clearData();
+            }
+        }
+
+        if (sAreaListItems != null) {
+            synchronized (sAreaListItems) {
+                sAreaListItems.clear();
+            }
+        }
+
+    }
 }

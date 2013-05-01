@@ -18,7 +18,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,6 +82,20 @@ public class ServerConnector implements Runnable {
         return requestId;
     }
 
+    public int httpGet(String url, int dataType, OutputStream out, ResponseListener listener) {
+        // Should be atomically get next request ID.
+        int requestId = mNextRqtId++;
+
+        Log.d(TAG, "httpGet: url = " + url);
+
+        Object[] obj = {
+                url, new Integer(requestId), new Integer(dataType), listener, out
+        };
+        Message msg = mHandler.obtainMessage(MSG_HTTPGET, obj);
+        mHandler.sendMessage(msg);
+        return requestId;
+    }
+
     class ConnectorHandler extends Handler {
         /**
          * This internal method handles the actual request/response and it
@@ -113,8 +129,56 @@ public class ServerConnector implements Runnable {
             int requestId = (Integer) mArgs[1];
             int dataType = (Integer) mArgs[2];
             ResponseListener listener = (ResponseListener) mArgs[3];
+            if (mArgs.length > 4) {
+                OutputStream out = (OutputStream) mArgs[4];
+                sHttpGet(url, out, requestId, dataType, listener);
+            } else {
+                sHttpGet(url, requestId, dataType, listener);
+            }
+        }
+    }
 
-            sHttpGet(url, requestId, dataType, listener);
+    // Synchronous HTTP Get.
+    void sHttpGet(String url, OutputStream out, int requestId, int dataType,
+            ResponseListener listener) {
+        long t1, t2;
+        if (TRACK_PERFORMANCE) {
+            t1 = System.currentTimeMillis();
+        }
+        AndroidHttpClient client = AndroidHttpClient.newInstance("Android-2.2.3");
+        int ecode = 0;
+        try {
+            HttpResponse resp = client.execute(new HttpGet(url));
+            if (DEBUG) {
+                Log.d(TAG, "HttpGet: url=" + url + ", status=" + resp.getStatusLine());
+            }
+            int statusCode = resp.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                ecode = statusCode;
+                Log.e(TAG, "Request ID=" + requestId + ", status=" + statusCode + ", url=" + url);
+            } else {
+                int n;
+                byte[] buf = new byte[4096];
+                HttpEntity entity = resp.getEntity();
+                InputStream in = entity.getContent();
+                while ((n = in.read(buf)) >= 0) {
+                    out.write(buf, 0, n);
+                }
+                out.flush();
+            }
+        } catch (IOException e) {
+            ecode = ErrorCode.INTERNAL_ERROR;
+            e.printStackTrace();
+            Log.e(TAG, "Request ID=" + requestId + ", url=" + url);
+        } finally {
+            client.close();
+        }
+        if (TRACK_PERFORMANCE) {
+            t2 = System.currentTimeMillis();
+            Log.d("PERF", "httpGet=" + (t2 - t1));
+        }
+        if (listener != null) {
+            listener.onReceive(requestId, dataType, ecode, out);
         }
     }
 

@@ -25,4 +25,7 @@ public class User {
     public int mRq;
     public long mCreateTime;
     public int mNew;
+    public String mImageUrl;
+    public String mThumbImg1;
+    public String mThumbImg2;
 }

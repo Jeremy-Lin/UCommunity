@@ -4,6 +4,7 @@ package com.inbuy.ucommunity.ui;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,6 +25,7 @@ import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
 import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.Util;
 
 public class UserIntroduceActivity extends Activity implements DataUpdateListener {
     private static final String TAG = "UserIntroduceActivity";
@@ -67,6 +69,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         this.setContentView(R.layout.activity_user_introduce);
 
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
 
         setupActionbar();
 
@@ -171,7 +174,26 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
     }
 
     private void setPhotoView() {
-        // TODO
+        Drawable drawable = null;
+
+        if (mTitleUserPhotoView != null && mUser != null) {
+            drawable = Util.getUserPhotoDrawable(this, mUser.mId, R.drawable.user_default);
+
+            if (drawable != null) {
+                mTitleUserPhotoView.setImageDrawable(drawable);
+            } else {
+                mTitleUserPhotoView.setImageResource(R.drawable.user_default);
+
+                String photoUrl = mUser.mImageUrl;
+                int index = photoUrl.indexOf(";");
+                String imgUrl = photoUrl.substring(0, index);
+                Object[] args = {
+                        mUser.mId, imgUrl
+                };
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, args);
+            }
+        }
+
     }
 
     private void setStarView() {
@@ -189,7 +211,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
     protected void onDestroy() {
         // TODO Auto-generated method stub
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER, this);
-
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
         super.onDestroy();
     }
 

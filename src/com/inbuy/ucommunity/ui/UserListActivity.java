@@ -72,6 +72,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
         Intent intent = this.getIntent();
         mCurrentCityId = intent.getStringExtra(Const.EXTRA_CITY_ID);
         mCurAreaPos = intent.getIntExtra(Const.EXTRA_AREA_POSITION, 0);
@@ -235,6 +236,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
 
     }
 
@@ -363,6 +365,9 @@ public class UserListActivity extends Activity implements DataUpdateListener {
                             break;
                         case DataUpdater.DATA_UPDATE_TYPE_USERS:
                             updateUserListView(status);
+                            break;
+                        case DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO:
+                            mUserListAdapter.notifyDataSetChanged();
                             break;
                         default:
                             break;
