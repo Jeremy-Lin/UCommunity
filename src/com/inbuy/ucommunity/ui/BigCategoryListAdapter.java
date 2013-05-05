@@ -3,7 +3,6 @@ package com.inbuy.ucommunity.ui;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,7 +65,6 @@ public class BigCategoryListAdapter extends ArrayAdapter<BigCategory> {
 
         if (holder != null) {
             BigCategory category = mCategories.get(position);
-            Log.d("", "category = " + category);
             holder.mNameView.setText(category.mName);
             holder.mIcon.setImageDrawable(this.getContext().getResources()
                     .getDrawable(R.drawable.ic_launcher));

@@ -261,4 +261,13 @@ public class Util {
         }
     }
 
+    public static String clearStrings(String strs) {
+        if (strs != null) {
+            strs = strs.replace("&nbsp;", "");
+            strs = strs.replace("\n\r", "");
+        }
+
+        return strs;
+    }
+
 }

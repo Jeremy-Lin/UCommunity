@@ -3,14 +3,17 @@ package com.inbuy.ucommunity.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -65,6 +68,10 @@ public class UserListActivity extends Activity implements DataUpdateListener {
     private int mCurAreaPos;
     private int mCurBigCatePos;
 
+    private int mLimitIndex = 0;
+
+    private boolean mLoading = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +85,8 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mCurAreaPos = intent.getIntExtra(Const.EXTRA_AREA_POSITION, 0);
         mCurBigCatePos = intent.getIntExtra(Const.EXTRA_BIGCATE_POSITION, 0);
 
+        mCurBigCatePos++;
+        Log.d(TAG, "onCreate: mCurAreaPos = " + mCurAreaPos + " mCurBigCatePos = " + mCurBigCatePos);
         initViewsRes();
         setupActionBar();
         setupSpinnerGroup();
@@ -129,6 +138,8 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mSpinnerLeft.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mCurAreaPos = position;
+                mLimitIndex = 0;
+                DataModel.clearUserList();
                 requestUserList();
             }
 
@@ -151,6 +162,8 @@ public class UserListActivity extends Activity implements DataUpdateListener {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // TODO
                 mCurBigCatePos = position;
+                mLimitIndex = 0;
+                DataModel.clearUserList();
                 requestUserList();
             }
 
@@ -158,7 +171,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
             }
         });
 
-        mSpinnerMiddle.setSelection(mCurBigCatePos + 1);
+        mSpinnerMiddle.setSelection(mCurBigCatePos);
     }
 
     private void setupSpinnerRight() {
@@ -167,32 +180,51 @@ public class UserListActivity extends Activity implements DataUpdateListener {
     }
 
     private void requestUserList() {
-        HashMap<String, String> arg = new HashMap<String, String>();
-
-        if (mCurBigCatePos == 0 && mCurAreaPos == 0) {
-            arg.put(NetUtil.PARAM_NAME_CITY, mCurrentCityId);
+        if (mLoading) {
+            return;
         }
 
-        if (mCurAreaPos != 0) {
+        HashMap<String, String> arg = new HashMap<String, String>();
+        arg.put(NetUtil.PARAM_NAME_CITY, mCurrentCityId);
+
+        if (mCurAreaPos > 0) {
             arg.put(NetUtil.PARAM_NAME_XZ, mAreaList.get(mCurAreaPos - 1).mId);
         }
 
-        if (mCurBigCatePos != 0) {
+        if (mCurBigCatePos > 0) {
             arg.put(NetUtil.PARAM_NAME_BCATE, mBigCateList.get(mCurBigCatePos - 1).mId);
         }
+
+        if (mLimitIndex != -1) {
+            arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
+            arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
+        }
+
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USERS, arg);
     }
 
     private void setupListView() {
         mUserList = DataModel.getUserListItems();
-        HashMap<String, String> arg = new HashMap<String, String>();
 
+        DataModel.clearUserList();
         requestUserList();
 
+        View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                .inflate(R.layout.user_list_footer, null, false);
+
+        mUserListView.addFooterView(foot);
+
+        foot.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                requestUserList();
+            }
+
+        });
+
         mUserListAdapter = new UserListAdapter(this, mUserList, null);
-
         mUserListView.setAdapter(mUserListAdapter);
-
         mUserListView.setOnItemClickListener(mUserItemClickListener);
 
     }
@@ -201,7 +233,10 @@ public class UserListActivity extends Activity implements DataUpdateListener {
 
         @Override
         public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-            gotoUserIntroduceScreen(position);
+            Log.d(TAG, "mUserItemClickListener: position = " + position);
+            if (position >= 0 && position < mUserList.size()) {
+                gotoUserIntroduceScreen(position);
+            }
         }
 
     };
@@ -238,6 +273,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
 
+        DataModel.clearUserList();
     }
 
     @Override
@@ -328,15 +364,29 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         Log.d(TAG, "updateUserListView: status = " + status);
         switch (status) {
             case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                if (mUserList == null || mUserList.size() == 0) {
+                    mUserListView.setVisibility(View.INVISIBLE);
+                }
+                mLoading = true;
                 mLoadingBar.setVisibility(View.VISIBLE);
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_READY:
                 mLoadingBar.setVisibility(View.GONE);
                 setUserList();
+
+                if (mUserList == null || mUserList.size() == 0) {
+                    mUserListView.setVisibility(View.INVISIBLE);
+                } else {
+                    mLimitIndex += Const.USER_COUNT;
+                    mUserListView.setVisibility(View.VISIBLE);
+                }
+
+                mLoading = false;
                 mUserListAdapter.notifyDataSetChanged();
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_ERROR:
                 mLoadingBar.setVisibility(View.GONE);
+                mLoading = false;
                 break;
         }
     }

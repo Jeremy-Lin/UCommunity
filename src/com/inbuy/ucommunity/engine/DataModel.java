@@ -146,6 +146,32 @@ public class DataModel {
         }
     }
 
+    /**
+     * Setter method of user list
+     */
+    public static void updateUserListItems(ArrayList<User> data) {
+        if (data == null) {
+            return;
+        }
+
+        if (sUserListItems == null) {
+            sUserListItems = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_USERS);
+        } else {
+            synchronized (sUserListItems) {
+                Object userList = sUserListItems.mData;
+                if (userList != null && userList instanceof ArrayList) {
+                    ArrayList<User> users = (ArrayList<User>) userList;
+                    for (User user : data) {
+                        users.add(user);
+                    }
+                    sUserListItems.updateData(users);
+                } else if (userList == null) {
+                    sUserListItems.updateData(data);
+                }
+            }
+        }
+    }
+
     public static User getUserItem() {
         if (sUserItem == null) {
             sUserItem = new DataCachingItem(DataUpdater.DATA_UPDATE_TYPE_USER);
@@ -287,6 +313,14 @@ public class DataModel {
 
         public int getDataType() {
             return mDataType;
+        }
+    }
+
+    public static void clearUserList() {
+        if (sUserListItems != null) {
+            synchronized (sUserListItems) {
+                sUserListItems.clearData();
+            }
         }
     }
 

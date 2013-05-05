@@ -161,15 +161,15 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
             setPhotoView();
             setStarView();
 
-            mUserAddrView.setText(mUser.mAddress);
-            mUserPhoneView.setText(mUser.mPhone);
-            mCardPhoneView.setText(mUser.mCardPhone);
+            mUserAddrView.setText(Util.clearStrings(mUser.mAddress));
+            mUserPhoneView.setText(Util.clearStrings(mUser.mPhone));
+            mCardPhoneView.setText(Util.clearStrings(mUser.mCardPhone));
 
-            mUserNameView.setText(mUser.mName);
-            mUserInfoView.setText(mUser.mInfo);
+            mUserNameView.setText(Util.clearStrings(mUser.mName));
+            mUserInfoView.setText(Util.clearStrings(mUser.mInfo));
 
-            mUserNameView2.setText(mUser.mName);
-            mUserCardMoreView.setText(mUser.mFckCardMore);
+            mUserNameView2.setText(Util.clearStrings(mUser.mName));
+            mUserCardMoreView.setText(Util.clearStrings(mUser.mFckCardMore));
         }
     }
 

@@ -7,4 +7,6 @@ public class Const {
     public static final String EXTRA_BIGCATE_POSITION = "extra_key_bigcate_position";
     public static final String EXTRA_USER_ID = "extra_key_user_id";
 
+    public static final int USER_COUNT = 10;
+
 }

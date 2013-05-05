@@ -22,6 +22,7 @@ import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
 import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.Util;
 
 public class UserDetailActivity extends Activity implements DataUpdateListener {
     private static final String TAG = "UserDetailActivity";
@@ -116,11 +117,11 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
         mUser = DataModel.getUserItem();
         if (mUser != null) {
 
-            mUserAddrView.setText(mUser.mAddress);
-            mUserPhoneView.setText(mUser.mPhone);
+            mUserAddrView.setText(Util.clearStrings(mUser.mAddress));
+            mUserPhoneView.setText(Util.clearStrings(mUser.mPhone));
 
-            mUserNameView.setText(mUser.mName);
-            mUserInfoView.setText(mUser.mInfo);
+            mUserNameView.setText(Util.clearStrings(mUser.mName));
+            mUserInfoView.setText(Util.clearStrings(mUser.mInfo));
 
         }
     }

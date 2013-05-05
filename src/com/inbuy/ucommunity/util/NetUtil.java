@@ -24,6 +24,8 @@ public class NetUtil {
     public static final String PARAM_NAME_LAT = "lat";
     public static final String PARAM_NAME_LONG = "long";
     public static final String PARAM_NAME_ID = "id";
+    public static final String PARAM_NAME_LIMIT = "limit";
+    public static final String PARAM_NAME_COUNT = "count";
 
     // url and actions
     public static final String URL_SERVER = "Http://www.Inbuy360.com/";
@@ -130,6 +132,16 @@ public class NetUtil {
         String smallCateId = ids.get(PARAM_NAME_SCATE);
         if (smallCateId != null && !smallCateId.isEmpty()) {
             sb.append(DELIMITER).append(PARAM_NAME_SCATE).append(DELIMITER).append(smallCateId);
+        }
+
+        String limit = ids.get(PARAM_NAME_LIMIT);
+        if (limit != null && !limit.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_LIMIT).append(DELIMITER).append(limit);
+        }
+
+        String count = ids.get(PARAM_NAME_COUNT);
+        if (count != null && !count.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_COUNT).append(DELIMITER).append(count);
         }
         String url = sb.toString();
         Log.d(TAG, "searchUserUrl: url = " + url);
