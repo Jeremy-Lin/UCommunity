@@ -2,6 +2,7 @@
 package com.inbuy.ucommunity.ui;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -75,7 +76,7 @@ public class UserListAdapter extends ArrayAdapter<User> {
             holder.mPriceView.setText(user.mDes);
 
             setUserPhotoView(user, holder.mPhoto);
-            setUserStarView();
+            setUserStarView(user, holder.mStarIcon);
         }
 
         return convertView;
@@ -105,8 +106,16 @@ public class UserListAdapter extends ArrayAdapter<User> {
         }
     }
 
-    private void setUserStarView() {
-        // TODO
+    private void setUserStarView(User user, ImageView starView) {
+        if (user == null || starView == null) {
+            return;
+        }
+        Drawable drawable = this.getContext().getResources().getDrawable(R.drawable.ic_star_light);
+        Bitmap bitmap = Util.drawableToBitmap(drawable);
+
+        int starCount = Integer.valueOf(user.mStar);
+        Bitmap starBitmap = Util.createStarsImageBitmap(bitmap, starCount);
+        starView.setImageBitmap(starBitmap);
     }
 
     @Override

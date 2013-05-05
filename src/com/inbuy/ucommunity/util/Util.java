@@ -4,7 +4,10 @@ package com.inbuy.ucommunity.util;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
@@ -268,6 +271,36 @@ public class Util {
         }
 
         return strs;
+    }
+
+    public static Bitmap createStarsImageBitmap(Bitmap originalImage, int stars) {
+
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+
+        int offset = 2;
+
+        // Create a new bitmap.
+        Bitmap bitmap = Bitmap.createBitmap((width + offset) * stars, height, Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        // Draw in the original image
+        for (int i = 0; i < stars; i++) {
+            canvas.drawBitmap(originalImage, 0 + (width + offset) * i, 0, null);
+        }
+        return bitmap;
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable
+                .getIntrinsicHeight(),
+                drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
+                        : Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
 }

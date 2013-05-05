@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -201,7 +202,15 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
     }
 
     private void setStarView() {
-        // TODO
+        if (mUser == null || mTitleUserStarView == null) {
+            return;
+        }
+        Drawable drawable = getResources().getDrawable(R.drawable.ic_star_light);
+        Bitmap bitmap = Util.drawableToBitmap(drawable);
+
+        int starCount = Integer.valueOf(mUser.mStar);
+        Bitmap starBitmap = Util.createStarsImageBitmap(bitmap, starCount);
+        mTitleUserStarView.setImageBitmap(starBitmap);
     }
 
     private void gotoUserDetailScreen() {
