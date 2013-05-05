@@ -155,6 +155,20 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                         break;
                     case 1:
                         break;
+                    case 2:
+                        break;
+                    case 3:
+                        gotoRecommandActivity();
+                        break;
+                    case 4:
+                        gotoPopulateActivity();
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        break;
+                    default:
+                        break;
                 }
 
             }
@@ -169,6 +183,28 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         Intent intent = new Intent();
         intent.setClass(this, BigCategoryActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
+        this.startActivity(intent);
+    }
+
+    private void gotoRecommandActivity() {
+        if (mCurrentCity == null) {
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClass(this, UserListActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
+        intent.putExtra(UserListActivity.EXTRA_TYPE, UserListActivity.TYPE_RECOMMAND);
+        this.startActivity(intent);
+    }
+
+    private void gotoPopulateActivity() {
+        if (mCurrentCity == null) {
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClass(this, UserListActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
+        intent.putExtra(UserListActivity.EXTRA_TYPE, UserListActivity.TYPE_POPULATE);
         this.startActivity(intent);
     }
 

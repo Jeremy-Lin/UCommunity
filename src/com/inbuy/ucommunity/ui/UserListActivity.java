@@ -1,6 +1,7 @@
 
 package com.inbuy.ucommunity.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,6 +45,14 @@ public class UserListActivity extends Activity implements DataUpdateListener {
     private static final int MSG_UPDATE_LIST = 0;
     private static final int MSG_ACTION = 1;
     private static final int MSG_DATA_UPDATE = 2;
+
+    public static final String EXTRA_TYPE = "extra_type";
+    public static final int TYPE_ALL = 0;
+    public static final int TYPE_NEARBY = 1;
+    public static final int TYPE_RECOMMAND = 2;
+    public static final int TYPE_POPULATE = 3;
+
+    private int mType;
 
     private LinearLayout mSpinnerGroup;
     private Spinner mSpinnerLeft;
@@ -81,6 +91,9 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
         Intent intent = this.getIntent();
+
+        mType = this.getIntent().getIntExtra(EXTRA_TYPE, TYPE_ALL);
+
         mCurrentCityId = intent.getStringExtra(Const.EXTRA_CITY_ID);
         mCurAreaPos = intent.getIntExtra(Const.EXTRA_AREA_POSITION, 0);
         mCurBigCatePos = intent.getIntExtra(Const.EXTRA_BIGCATE_POSITION, 0);
@@ -103,17 +116,29 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
     }
 
+    @SuppressLint("NewApi")
     private void setupActionBar() {
         ActionBar actionbar = this.getActionBar();
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
-        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeButtonEnabled(true);
+        actionbar.setIcon(R.drawable.ic_actionbar_back);
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
         actionbar.setDisplayShowCustomEnabled(true);
 
+        // Set title view.
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);
         TextView titleView = (TextView) customView.findViewById(R.id.txt_actionbar_title);
-        titleView.setText("商户列表");
+        String title = "";
+        if (mType == TYPE_RECOMMAND) {
+            title = getResources().getString(R.string.title_user_new);
+        } else if (mType == TYPE_POPULATE) {
+            title = getResources().getString(R.string.title_user_populate);
+        } else {
+            title = getResources().getString(R.string.title_user_info);
+        }
+
+        titleView.setText(title);
         actionbar.setCustomView(customView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) customView.getLayoutParams();
@@ -121,10 +146,29 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         actionbar.setCustomView(customView, lp);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.user_list_actonbar_menu, menu);
+
+        MenuItem locationItem = menu.findItem(R.id.menu_item_location);
+        if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE) {
+            locationItem.setVisible(true);
+        } else {
+            locationItem.setVisible(false);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
     private void setupSpinnerGroup() {
-        setupSpinnerLeft();
-        setupSpinnerMiddle();
-        setupSpinnerRight();
+        if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE) {
+            mSpinnerGroup.setVisibility(View.GONE);
+        } else {
+            setupSpinnerLeft();
+            setupSpinnerMiddle();
+            setupSpinnerRight();
+        }
     }
 
     private void setupSpinnerLeft() {
@@ -185,14 +229,22 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         }
 
         HashMap<String, String> arg = new HashMap<String, String>();
+
         arg.put(NetUtil.PARAM_NAME_CITY, mCurrentCityId);
 
-        if (mCurAreaPos > 0) {
-            arg.put(NetUtil.PARAM_NAME_XZ, mAreaList.get(mCurAreaPos - 1).mId);
-        }
+        if (mType == TYPE_RECOMMAND) {
+            arg.put(NetUtil.PARAM_NAME_TJ, String.valueOf(1));
+        } else if (mType == TYPE_POPULATE) {
+            arg.put(NetUtil.PARAM_NAME_RQ, String.valueOf(1));
+        } else {
 
-        if (mCurBigCatePos > 0) {
-            arg.put(NetUtil.PARAM_NAME_BCATE, mBigCateList.get(mCurBigCatePos - 1).mId);
+            if (mCurAreaPos > 0) {
+                arg.put(NetUtil.PARAM_NAME_XZ, mAreaList.get(mCurAreaPos - 1).mId);
+            }
+
+            if (mCurBigCatePos > 0) {
+                arg.put(NetUtil.PARAM_NAME_BCATE, mBigCateList.get(mCurBigCatePos - 1).mId);
+            }
         }
 
         if (mLimitIndex != -1) {
@@ -255,6 +307,8 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         switch (id) {
             case android.R.id.home:
                 finish();
+                break;
+            case R.id.menu_item_location:
                 break;
             default:
                 break;

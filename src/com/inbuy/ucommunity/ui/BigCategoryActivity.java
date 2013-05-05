@@ -1,6 +1,7 @@
 
 package com.inbuy.ucommunity.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
@@ -76,14 +77,17 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
 
     }
 
+    @SuppressLint("NewApi")
     private void setupActionbar() {
         ActionBar actionbar = this.getActionBar();
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
 
+        actionbar.setHomeButtonEnabled(true);
+        actionbar.setIcon(R.drawable.ic_actionbar_back);
+
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
 
-        actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setDisplayShowCustomEnabled(true);
 
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);

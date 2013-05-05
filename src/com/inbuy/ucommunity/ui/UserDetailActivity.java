@@ -1,6 +1,7 @@
 
 package com.inbuy.ucommunity.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
@@ -61,19 +62,22 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER, mUserId);
     }
 
+    @SuppressLint("NewApi")
     private void setupActionbar() {
         ActionBar actionbar = this.getActionBar();
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
 
+        actionbar.setHomeButtonEnabled(true);
+        actionbar.setIcon(R.drawable.ic_actionbar_back);
+
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
 
-        actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setDisplayShowCustomEnabled(true);
 
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);
         TextView titleView = (TextView) customView.findViewById(R.id.txt_actionbar_title);
-        titleView.setText("商户信息");
+        titleView.setText(getResources().getString(R.string.title_user_info));
         actionbar.setCustomView(customView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) customView.getLayoutParams();
