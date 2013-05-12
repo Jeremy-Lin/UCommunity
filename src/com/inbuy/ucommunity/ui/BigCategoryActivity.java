@@ -12,19 +12,23 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
+import com.inbuy.ucommunity.data.PanelListItem;
 import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
@@ -39,21 +43,47 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
     private static final int MSG_DATA_UPDATE = 2;
 
     private ListView mBigCategoryList;
-    private Spinner mAreaSpinner;
     private ProgressBar mLoadingBar;
 
-    ArrayAdapter<String> mAreaAdapter;
+    private RelativeLayout mAreaLayout;
+    private TextView mAreaNameView;
+    private ImageView mAreaIndicator;
 
-    ArrayList<Area> mAreaList;
+    private RelativeLayout mAreaPanel;
+
     ArrayList<BigCategory> mBigCategories;
     BigCategoryListAdapter mBigCateAdapter;
 
     ArrayList<String> mAreaNameList = new ArrayList<String>();
 
+    ArrayList<Area> mXzAreaList;
+    ArrayList<Area> mBusAreaList;
+
+    ArrayList<PanelListItem> mXzAreaNameList = new ArrayList<PanelListItem>();
+    PanelListAdapter mXzAreaAdapter;
+    ArrayList<PanelListItem> mBusAreaNameList = new ArrayList<PanelListItem>();
+    PanelListAdapter mBusAreaAdapter;
+
+    private ListView mXzList;
+    private ListView mBusList;
+
     private String mCurrentCityId;
 
-    private int mAreaPosition;
+    private String mCurrentXzId;
+    private String mCurrentBusId;
+
     private int mBigCatePosition;
+
+    private int mXzAreaPosition;
+    private int mBusAreaPosition;
+
+    private int mXzAreaPrePos;
+    private int mBusAreaPrePos;
+
+    private Animation mAnimPanelShow = null;
+    private Animation mAnimPanelHide = null;
+
+    private boolean mAnimating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,20 +91,47 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_big_category);
 
-        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS, this);
 
         setupActionbar();
         mBigCategoryList = (ListView) this.findViewById(R.id.list_users);
-        mAreaSpinner = (Spinner) this.findViewById(R.id.spinner);
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
 
-        mCurrentCityId = this.getIntent().getStringExtra(Const.EXTRA_CITY_ID);
-        DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAES, mCurrentCityId);
+        mXzList = (ListView) this.findViewById(R.id.list_xz);
+        mBusList = (ListView) this.findViewById(R.id.list_bus);
 
-        setupSpinner();
+        mAreaLayout = (RelativeLayout) this.findViewById(R.id.layout_area);
+        mAreaNameView = (TextView) this.findViewById(R.id.txt_area_name);
+        mAreaIndicator = (ImageView) this.findViewById(R.id.img_indicator);
+        mAreaPanel = (RelativeLayout) this.findViewById(R.id.panel_area);
+
+        mAreaLayout.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                if (mAreaPanel.isShown()) {
+                    hideAreaPanel();
+                } else {
+                    showAreaPanel();
+                }
+            }
+
+        });
+
+        mCurrentCityId = this.getIntent().getStringExtra(Const.EXTRA_CITY_ID);
+        DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, mCurrentCityId);
+
+        initAnimation();
+
         setupListview();
 
+        setupXzListView();
+        setupBusListView();
+
+        setAreaNameView();
     }
 
     @SuppressLint("NewApi")
@@ -83,7 +140,7 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
 
         actionbar.setHomeButtonEnabled(true);
-        actionbar.setIcon(R.drawable.ic_actionbar_back);
+        actionbar.setIcon(R.drawable.actionbar_back_selector);
 
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
@@ -100,28 +157,78 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         actionbar.setCustomView(customView, lp);
     }
 
-    private void setupSpinner() {
-        // FIXME to get areas from the server.
-        mAreaNameList.add("全部商户");
-        mAreaAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-                mAreaNameList);
+    private void initAnimation() {
+        if (mAnimPanelShow == null) {
+            mAnimPanelShow = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topin);
 
-        mAreaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mAreaSpinner.setAdapter(mAreaAdapter);
+            mAnimPanelShow.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mAreaPanel.setVisibility(View.VISIBLE);
+                    mAnimating = false;
+                }
 
-        mAreaSpinner.setOnItemSelectedListener(mAreaItemSelectedListener);
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
 
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
+
+        if (mAnimPanelHide == null) {
+            mAnimPanelHide = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topout);
+
+            mAnimPanelHide.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mAreaPanel.setVisibility(View.INVISIBLE);
+                    mAnimating = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
     }
 
-    private OnItemSelectedListener mAreaItemSelectedListener = new OnItemSelectedListener() {
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            mAreaPosition = position;
+    private void showAreaPanel() {
+        mAreaIndicator.setImageResource(R.drawable.ic_arrow_up);
+
+        if (mAnimating) {
+            return;
         }
 
-        public void onNothingSelected(AdapterView<?> parent) {
-            mAreaPosition = 0;
+        mAreaPanel.clearAnimation();
+
+        mAreaPanel.startAnimation(mAnimPanelShow);
+        mAreaPanel.postInvalidate();
+        mAnimating = true;
+    }
+
+    private void hideAreaPanel() {
+        mAreaIndicator.setImageResource(R.drawable.ic_arrow_down);
+
+        if (mAnimating) {
+            return;
         }
-    };
+
+        mAreaPanel.clearAnimation();
+
+        mAreaPanel.startAnimation(mAnimPanelHide);
+        mAreaPanel.postInvalidate();
+        mAnimating = true;
+
+    }
 
     private void setupListview() {
         mBigCategories = DataModel.getBigCatesListItems();
@@ -129,6 +236,104 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         mBigCateAdapter = new BigCategoryListAdapter(this, mBigCategories, mHanlder);
         mBigCategoryList.setAdapter(mBigCateAdapter);
         mBigCategoryList.setOnItemClickListener(mBigCateItemClickListener);
+    }
+
+    private void setAreaNameView() {
+        if (mXzAreaPosition == 0 && mBusAreaPosition == 0) {
+            mAreaNameView.setText(getResources().getText(R.string.all_area));
+        } else if (mBusAreaPosition == 0) {
+            mAreaNameView.setText(mXzAreaNameList.get(mXzAreaPosition).mName);
+        } else {
+            mAreaNameView.setText(mBusAreaNameList.get(mBusAreaPosition).mName);
+        }
+    }
+
+    private void setupXzListView() {
+        PanelListItem pli = new PanelListItem(PanelListItem.TYPE_LEFT, this.getResources()
+                .getString(R.string.all_area), false);
+        mXzAreaNameList.add(pli);
+        // mXzAreaAdapter = new ArrayAdapter<String>(this,
+        // android.R.layout.simple_list_item_1,
+        // mXzAreaNameList);
+        mXzAreaAdapter = new PanelListAdapter(this, mXzAreaNameList, mHanlder);
+
+        mXzList.setAdapter(mXzAreaAdapter);
+
+        mXzList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mXzAreaNameList == null || mXzAreaNameList.isEmpty() || position < 0
+                        || position >= mXzAreaNameList.size()) {
+                    return;
+                }
+                mXzAreaPrePos = mXzAreaPosition;
+                mXzAreaPosition = position;
+                mXzAreaNameList.get(mXzAreaPrePos).mSelected = false;
+                mXzAreaNameList.get(mXzAreaPosition).mSelected = true;
+                mXzAreaAdapter.notifyDataSetChanged();
+
+                mBusAreaPosition = 0;
+
+                if (position == 0) {
+                    mBusAreaList = null;
+
+                    if (!mBusAreaNameList.isEmpty()) {
+                        mBusAreaNameList.clear();
+                    }
+
+                    String name = BigCategoryActivity.this.getResources().getString(
+                            R.string.all_area);
+                    PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, name, false);
+                    mBusAreaNameList.add(pli);
+                    mBusAreaAdapter.notifyDataSetChanged();
+                } else if (position > 0) {
+                    mCurrentXzId = mXzAreaList.get(position - 1).mId;
+                    updateBusAreaList(DataUpdater.DATA_UPDATE_STATUS_READY);
+                }
+            }
+
+        });
+    }
+
+    private void setupBusListView() {
+        String name = getResources().getString(R.string.all_area);
+        PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, name, false);
+
+        mBusAreaNameList.add(pli);
+
+        mBusAreaAdapter = new PanelListAdapter(this, mBusAreaNameList, mHanlder);
+
+        mBusList.setAdapter(mBusAreaAdapter);
+
+        mBusList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mBusAreaNameList == null || mBusAreaNameList.isEmpty() || position < 0
+                        || position >= mBusAreaNameList.size()) {
+                    return;
+                }
+
+                mBusAreaPrePos = mBusAreaPosition;
+                mBusAreaPosition = position;
+                mBusAreaNameList.get(mBusAreaPrePos).mSelected = false;
+                mBusAreaNameList.get(mBusAreaPosition).mSelected = true;
+                mBusAreaAdapter.notifyDataSetChanged();
+
+                mBusAreaPosition = position;
+                if (position > 0) {
+                    mCurrentBusId = mBusAreaList.get(position - 1).mId;
+                }
+
+                setAreaNameView();
+                hideAreaPanel();
+
+            }
+
+        });
     }
 
     private OnItemClickListener mBigCateItemClickListener = new OnItemClickListener() {
@@ -145,7 +350,8 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         Intent intent = new Intent();
         intent.setClass(this, UserListActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCityId);
-        intent.putExtra(Const.EXTRA_AREA_POSITION, mAreaPosition);
+        intent.putExtra(Const.EXTRA_XZ_AREA_POSITION, mXzAreaPosition);
+        intent.putExtra(Const.EXTRA_BUS_AREA_POSITION, mBusAreaPosition);
         intent.putExtra(Const.EXTRA_BIGCATE_POSITION, mBigCatePosition);
         this.startActivity(intent);
     }
@@ -153,7 +359,8 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
     @Override
     protected void onDestroy() {
         // TODO Auto-generated method stub
-        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
 
         super.onDestroy();
@@ -186,19 +393,63 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         super.onResume();
     }
 
-    private void updateSpinner(int status) {
-        Log.d(TAG, "updateSpinner: status = " + status);
+    private void updateXzAreaList(int status) {
+        Log.d(TAG, "updateXzAreaList: status = " + status);
         switch (status) {
             case DataUpdater.DATA_UPDATE_STATUS_LOADING:
                 mLoadingBar.setVisibility(View.VISIBLE);
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_READY:
                 mLoadingBar.setVisibility(View.GONE);
-                mAreaList = DataModel.getAreaListItems(Integer.valueOf(mCurrentCityId));
-                for (Area area : mAreaList) {
-                    mAreaNameList.add(area.mName);
+                mXzAreaList = DataModel.getXzAreaListItems(Integer.valueOf(mCurrentCityId));
+                for (Area area : mXzAreaList) {
+                    PanelListItem item = new PanelListItem(PanelListItem.TYPE_LEFT, area.mName,
+                            false);
+                    mXzAreaNameList.add(item);
                 }
-                mAreaAdapter.notifyDataSetChanged();
+                mXzAreaAdapter.notifyDataSetChanged();
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
+                mLoadingBar.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    private void updateBusAreaList(int status) {
+        Log.d(TAG, "updateBusAreaList: status = " + status);
+        switch (status) {
+            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                mLoadingBar.setVisibility(View.VISIBLE);
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_READY:
+                mLoadingBar.setVisibility(View.GONE);
+                if (mCurrentXzId == null) {
+                    break;
+                }
+                mBusAreaList = DataModel.getBusAreaListItems(Integer.valueOf(mCurrentXzId));
+
+                if (!mBusAreaNameList.isEmpty()) {
+                    mBusAreaNameList.clear();
+                }
+
+                String allBus = this.getResources().getString(R.string.all_bus);
+                Area xzSelected = DataModel.getXzAreaById(Integer.valueOf(mCurrentCityId),
+                        mCurrentXzId);
+
+                if (xzSelected != null) {
+                    allBus = String.format(allBus, xzSelected.mName);
+                } else {
+                    allBus = String.format(allBus, "");
+                }
+
+                PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, allBus, false);
+
+                mBusAreaNameList.add(pli);
+                for (Area area : mBusAreaList) {
+                    pli = new PanelListItem(PanelListItem.TYPE_RIGHT, area.mName, false);
+                    mBusAreaNameList.add(pli);
+                }
+                mBusAreaAdapter.notifyDataSetChanged();
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_ERROR:
                 mLoadingBar.setVisibility(View.GONE);
@@ -228,8 +479,6 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
 
         @Override
         public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
-
             int what = msg.what;
             switch (what) {
                 case MSG_UPDATE_LIST:
@@ -240,8 +489,11 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
                     int dataType = msg.arg2;
                     int status = msg.arg1;
                     switch (dataType) {
-                        case DataUpdater.DATA_UPDATE_TYPE_AREAES:
-                            updateSpinner(status);
+                        case DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ:
+                            updateXzAreaList(status);
+                            break;
+                        case DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS:
+                            updateBusAreaList(status);
                             break;
                         case DataUpdater.DATA_UPDATE_TYPE_BIGCATES:
                             updateBigCateListView(status);

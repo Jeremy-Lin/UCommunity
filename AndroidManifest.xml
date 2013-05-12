@@ -30,11 +30,17 @@
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.HomeActivity" >
         </activity>
-        <activity android:name="com.inbuy.ucommunity.ui.UserListActivity" >
+        <activity
+            android:name="com.inbuy.ucommunity.ui.UserListActivity"
+            android:launchMode="singleTask" >
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.UserIntroduceActivity" >
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.UserDetailActivity" >
+        </activity>
+        <activity
+            android:name="com.inbuy.ucommunity.ui.SearchActivity"
+            android:launchMode="singleTask" >
         </activity>
     </application>
 

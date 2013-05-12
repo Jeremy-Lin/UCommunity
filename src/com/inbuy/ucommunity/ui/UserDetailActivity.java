@@ -68,7 +68,7 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
 
         actionbar.setHomeButtonEnabled(true);
-        actionbar.setIcon(R.drawable.ic_actionbar_back);
+        actionbar.setIcon(R.drawable.ic_actionbar_back_normal);
 
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);

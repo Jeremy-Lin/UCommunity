@@ -6,6 +6,7 @@ import android.util.Log;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
+import com.inbuy.ucommunity.data.SmallCategory;
 import com.inbuy.ucommunity.data.User;
 
 import org.json.JSONArray;
@@ -82,6 +83,29 @@ public class JSONUtil {
         }
 
         return bigcateList;
+    }
+
+    public static ArrayList<SmallCategory> parseResonseSmallcateList(JSONArray jsonArray)
+            throws JSONException {
+        if (jsonArray == null) {
+            return null;
+        }
+
+        ArrayList<SmallCategory> smallcateList = new ArrayList<SmallCategory>();
+        int resultCount = jsonArray.length();
+        Log.d(TAG, "parseResonseBigcateList: resultCount = " + resultCount);
+        SmallCategory smallcate = null;
+        for (int i = 0; i < resultCount; i++) {
+            JSONObject resultObject = jsonArray.getJSONObject(i);
+            String name = resultObject.getString("name");
+            String id = resultObject.getString("id");
+
+            Log.d(TAG, "parseResonseBigcateList: i = " + i + " name = " + name + " id = " + id);
+            smallcate = new SmallCategory(id, name);
+            smallcateList.add(smallcate);
+        }
+
+        return smallcateList;
     }
 
     public static ArrayList<User> parseResonseUserList(JSONArray jsonArray) throws JSONException {

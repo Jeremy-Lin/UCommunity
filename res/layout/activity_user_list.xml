@@ -12,41 +12,91 @@
             android:id="@+id/group_spinners"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/header_bar_bg" >
+            android:background="@drawable/header_bar_bg"
+            android:gravity="left|center_vertical"
+            android:orientation="horizontal" >
 
-            <Spinner
-                android:id="@+id/spinner_left"
+            <RelativeLayout
+                android:id="@+id/layout_area"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:gravity="center_vertical" >
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_vertical_divider" />
+                <TextView
+                    android:id="@+id/txt_area_name"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:textColor="#000000" />
 
-            <Spinner
-                android:id="@+id/spinner_middle"
+                <ImageView
+                    android:id="@+id/img_area_name_divider"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/ic_vertical_divider" />
+
+                <ImageView
+                    android:id="@+id/img_area_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@id/img_area_name_divider"
+                    android:src="@drawable/ic_arrow_down" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/layout_cate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:gravity="center_vertical" >
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_vertical_divider" />
+                <TextView
+                    android:id="@+id/txt_cate_name"
+                    android:layout_width="70dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:textColor="#000000" />
 
-            <Spinner
-                android:id="@+id/spinner_right"
+                <ImageView
+                    android:id="@+id/img_cate_name_divider"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/ic_vertical_divider" />
+
+                <ImageView
+                    android:id="@+id/img_cate_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@id/img_cate_name_divider"
+                    android:src="@drawable/ic_arrow_down" />
+            </RelativeLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_height="match_parent"
+                android:layout_weight="1" >
+            </LinearLayout>
         </LinearLayout>
-        
+
         <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_divider" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_divider" />
 
         <ListView
             android:id="@+id/list_users"
@@ -55,6 +105,92 @@
             android:divider="@drawable/ic_divider"
             android:listSelector="@null" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/panel_area"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="36dp"
+        android:background="#00000000"
+        android:visibility="invisible" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30dp"
+            android:background="#55000000" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/panel_list_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/left_panel_bg" >
+
+            <ListView
+                android:id="@+id/list_xz"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_weight="1" >
+            </ListView>
+
+            <ListView
+                android:id="@+id/list_bus"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_weight="1"
+                android:background="#e4e3de"
+                android:divider="@null" >
+            </ListView>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/panel_category"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="36dp"
+        android:background="#00000000"
+        android:visibility="invisible" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30dp"
+            android:background="#55000000" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/panel_list_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/middle_panel_bg"
+            android:paddingBottom="8dp"
+            android:paddingTop="12dp" >
+
+            <ListView
+                android:id="@+id/list_big_cate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" >
+            </ListView>
+
+            <ListView
+                android:id="@+id/list_small_cate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#e4e3de"
+                android:divider="@null" >
+            </ListView>
+        </LinearLayout>
+    </RelativeLayout>
 
     <ProgressBar
         android:id="@+id/loading"

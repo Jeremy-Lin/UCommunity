@@ -4,6 +4,7 @@ package com.inbuy.ucommunity.engine;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
+import com.inbuy.ucommunity.data.SmallCategory;
 import com.inbuy.ucommunity.data.User;
 
 import java.util.ArrayList;
@@ -25,7 +26,9 @@ public class DataModel {
     private static DataCachingItem sUserItem = new DataCachingItem(
             DataUpdater.DATA_UPDATE_TYPE_USER);
 
-    private static Hashtable<Integer, DataCachingItem> sAreaListItems = new Hashtable<Integer, DataCachingItem>();
+    private static Hashtable<Integer, DataCachingItem> sXzAreaListItems = new Hashtable<Integer, DataCachingItem>();
+    private static Hashtable<Integer, DataCachingItem> sBusAreaListItems = new Hashtable<Integer, DataCachingItem>();
+    private static Hashtable<Integer, DataCachingItem> sSmallCateListItems = new Hashtable<Integer, DataCachingItem>();
 
     public static boolean checkDataOutOfDateStatus(DataCachingItem data) {
         if (data == null) {
@@ -43,7 +46,7 @@ public class DataModel {
                     isOutOfDate = true;
                 }
                 break;
-            case DataUpdater.DATA_UPDATE_TYPE_AREAES:
+            case DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ:
             case DataUpdater.DATA_UPDATE_TYPE_BIGCATES:
                 if (updateDuration >= DataUpdater.TIME_DURATION_FOR_DATA_RELOAD_HIGH) {
                     isOutOfDate = true;
@@ -218,20 +221,34 @@ public class DataModel {
         }
     }
 
+    public static Area getXzAreaById(int cityId, String xzId) {
+        if (sXzAreaListItems == null) {
+            return null;
+        }
+
+        ArrayList<Area> xzList = getXzAreaListItems(cityId);
+        for (Area xz : xzList) {
+            if (xz.mId.equals(xzId)) {
+                return xz;
+            }
+        }
+        return null;
+    }
+
     /**
      * Getter method of area list
      */
-    public static ArrayList<Area> getAreaListItems(int id) {
-        if (sAreaListItems == null) {
-            sAreaListItems = new Hashtable<Integer, DataCachingItem>();
+    public static ArrayList<Area> getXzAreaListItems(int id) {
+        if (sXzAreaListItems == null) {
+            sXzAreaListItems = new Hashtable<Integer, DataCachingItem>();
         }
 
-        synchronized (sAreaListItems) {
-            DataCachingItem data = sAreaListItems.get(id);
+        synchronized (sXzAreaListItems) {
+            DataCachingItem data = sXzAreaListItems.get(id);
 
             if (data == null || checkDataOutOfDateStatus(data)) {
                 String uid = String.valueOf(id);
-                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAES, uid);
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, uid);
             }
             if (data != null) {
                 return new ArrayList<Area>((ArrayList<Area>) data.getData());
@@ -244,15 +261,93 @@ public class DataModel {
     /**
      * Setter method of area list
      */
-    public static void setAreaListItems(int id, ArrayList<Area> data) {
+    public static void setXzAreaListItems(int id, ArrayList<Area> data) {
         if (data == null) {
             return;
         }
 
-        synchronized (sAreaListItems) {
-            DataCachingItem items = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_AREAES);
+        synchronized (sXzAreaListItems) {
+            DataCachingItem items = new DataCachingItem(data, DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ);
             if (items != null)
-                sAreaListItems.put(id, items);
+                sXzAreaListItems.put(id, items);
+        }
+    }
+
+    /**
+     * Getter method of small cate list
+     */
+    public static ArrayList<SmallCategory> getSmallCateListItems(int id) {
+        if (sSmallCateListItems == null) {
+            sSmallCateListItems = new Hashtable<Integer, DataCachingItem>();
+        }
+
+        synchronized (sSmallCateListItems) {
+            DataCachingItem data = sSmallCateListItems.get(id);
+
+            if (data == null || checkDataOutOfDateStatus(data)) {
+                String uid = String.valueOf(id);
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_SMALLCATES, uid);
+            }
+            if (data != null) {
+                return new ArrayList<SmallCategory>((ArrayList<SmallCategory>) data.getData());
+            } else {
+                return new ArrayList<SmallCategory>();
+            }
+        }
+    }
+
+    /**
+     * Setter method of small cate list
+     */
+    public static void setSmallCateListItems(int id, ArrayList<SmallCategory> smallCateList) {
+        if (smallCateList == null) {
+            return;
+        }
+
+        synchronized (sSmallCateListItems) {
+            DataCachingItem items = new DataCachingItem(smallCateList,
+                    DataUpdater.DATA_UPDATE_TYPE_SMALLCATES);
+            if (items != null)
+                sSmallCateListItems.put(id, items);
+        }
+    }
+
+    /**
+     * Getter method of area list
+     */
+    public static ArrayList<Area> getBusAreaListItems(int id) {
+        if (sBusAreaListItems == null) {
+            sBusAreaListItems = new Hashtable<Integer, DataCachingItem>();
+        }
+
+        synchronized (sBusAreaListItems) {
+            DataCachingItem data = sBusAreaListItems.get(id);
+
+            if (data == null || checkDataOutOfDateStatus(data)) {
+                String uid = String.valueOf(id);
+                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS, uid);
+            }
+            if (data != null) {
+                return new ArrayList<Area>((ArrayList<Area>) data.getData());
+            } else {
+                return new ArrayList<Area>();
+            }
+        }
+    }
+
+    /**
+     * Setter method of area list
+     */
+    public static void setBusAreaListItems(int id, ArrayList<Area> data) {
+        if (data == null) {
+            return;
+        }
+
+        synchronized (sBusAreaListItems) {
+            DataCachingItem items = new DataCachingItem(data,
+                    DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS);
+            if (items != null)
+                sBusAreaListItems.put(id, items);
         }
     }
 
@@ -350,9 +445,21 @@ public class DataModel {
             }
         }
 
-        if (sAreaListItems != null) {
-            synchronized (sAreaListItems) {
-                sAreaListItems.clear();
+        if (sXzAreaListItems != null) {
+            synchronized (sXzAreaListItems) {
+                sXzAreaListItems.clear();
+            }
+        }
+
+        if (sBusAreaListItems != null) {
+            synchronized (sXzAreaListItems) {
+                sBusAreaListItems.clear();
+            }
+        }
+
+        if (sSmallCateListItems != null) {
+            synchronized (sSmallCateListItems) {
+                sSmallCateListItems.clear();
             }
         }
 

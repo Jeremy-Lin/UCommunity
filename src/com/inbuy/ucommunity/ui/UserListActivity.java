@@ -17,19 +17,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
+import android.widget.RelativeLayout;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
+import com.inbuy.ucommunity.data.PanelListItem;
+import com.inbuy.ucommunity.data.SmallCategory;
 import com.inbuy.ucommunity.data.User;
 import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
@@ -40,7 +46,7 @@ import com.inbuy.ucommunity.util.NetUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class UserListActivity extends Activity implements DataUpdateListener {
+public class UserListActivity extends Activity implements DataUpdateListener, OnQueryTextListener {
     private static final String TAG = "UserListActivity";
     private static final int MSG_UPDATE_LIST = 0;
     private static final int MSG_ACTION = 1;
@@ -51,43 +57,100 @@ public class UserListActivity extends Activity implements DataUpdateListener {
     public static final int TYPE_NEARBY = 1;
     public static final int TYPE_RECOMMAND = 2;
     public static final int TYPE_POPULATE = 3;
+    public static final int TYPE_SEARCH = 4;
 
     private int mType;
 
     private LinearLayout mSpinnerGroup;
-    private Spinner mSpinnerLeft;
-    private Spinner mSpinnerMiddle;
-    private Spinner mSpinnerRight;
 
     private ListView mUserListView;
 
     private ProgressBar mLoadingBar;
 
-    ArrayAdapter<String> mAreaAdapter;
-    ArrayList<String> mAreaNameList = new ArrayList<String>();
-    ArrayList<Area> mAreaList;
+    private SearchView mSearchView;
 
-    ArrayAdapter<String> mBigCateAdapter;
-    ArrayList<String> mBigCateNameList = new ArrayList<String>();
+    PanelListAdapter mXzAreaAdapter;
+    ArrayList<PanelListItem> mXzAreaNameList = new ArrayList<PanelListItem>();
+    ArrayList<Area> mXzAreaList;
+
+    PanelListAdapter mBusAreaAdapter;
+    ArrayList<PanelListItem> mBusAreaNameList = new ArrayList<PanelListItem>();
+    ArrayList<Area> mBusAreaList;
+
+    private ListView mXzList;
+    private ListView mBusList;
+
+    private RelativeLayout mAreaLayout;
+    private TextView mAreaNameView;
+    private ImageView mAreaIndicator;
+
+    private RelativeLayout mCateLayout;
+    private TextView mCateNameView;
+    private ImageView mCateIndicator;
+
+    private RelativeLayout mAreaPanel;
+
+    private RelativeLayout mCatePanel;
+
+    PanelListAdapter mBigCateAdapter;
+    ArrayList<PanelListItem> mBigCateNameList = new ArrayList<PanelListItem>();
     ArrayList<BigCategory> mBigCateList;
+
+    PanelListAdapter mSmallCateAdapter;
+    ArrayList<PanelListItem> mSmallCateNameList = new ArrayList<PanelListItem>();
+    ArrayList<SmallCategory> mSmallCateList;
+
+    private ListView mBigCateListView;
+    private ListView mSmallCateListView;
 
     ArrayList<User> mUserList;
     UserListAdapter mUserListAdapter;
 
     private String mCurrentCityId;
     private int mCurAreaPos;
+
     private int mCurBigCatePos;
+    private int mCurSmallCatePos;
+
+    private int mCurXzAreaPos;
+    private int mCurBusAreaPos;
+
+    private int mPreXzAreaPos;
+    private int mPreBusAreaPos;
+
+    private int mPreBigCatePos;
+    private int mPreSmallCatePos;
+
+    private String mCurrentXzId;
+    private String mCurrentBusId;
+
+    private String mCurBigCateId;
+    private String mCurSmallCateId;
+
+    private String mKeyword;
 
     private int mLimitIndex = 0;
 
     private boolean mLoading = false;
 
+    private Animation mAnimAreaPanelShow = null;
+    private Animation mAnimAreaPanelHide = null;
+
+    private boolean mAreaPanelAnimating;
+
+    private Animation mAnimCatePanelShow = null;
+    private Animation mAnimCatePanelHide = null;
+
+    private boolean mCatePanelAnimating;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_user_list);
-        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
+        DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_SMALLCATES, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
         Intent intent = this.getIntent();
@@ -95,25 +158,85 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mType = this.getIntent().getIntExtra(EXTRA_TYPE, TYPE_ALL);
 
         mCurrentCityId = intent.getStringExtra(Const.EXTRA_CITY_ID);
+        mKeyword = intent.getStringExtra(Const.EXTRA_KEYWORD);
         mCurAreaPos = intent.getIntExtra(Const.EXTRA_AREA_POSITION, 0);
         mCurBigCatePos = intent.getIntExtra(Const.EXTRA_BIGCATE_POSITION, 0);
+        mCurXzAreaPos = intent.getIntExtra(Const.EXTRA_XZ_AREA_POSITION, 0);
+        mCurBusAreaPos = intent.getIntExtra(Const.EXTRA_BUS_AREA_POSITION, 0);
 
-        mCurBigCatePos++;
+        if (mType == TYPE_ALL) {
+            mCurBigCatePos++;
+        }
         Log.d(TAG, "onCreate: mCurAreaPos = " + mCurAreaPos + " mCurBigCatePos = " + mCurBigCatePos);
         initViewsRes();
+        initAnimation();
         setupActionBar();
         setupSpinnerGroup();
         setupListView();
     }
 
     private void initViewsRes() {
-        mSpinnerLeft = (Spinner) findViewById(R.id.spinner_left);
-        mSpinnerRight = (Spinner) findViewById(R.id.spinner_right);
-        mSpinnerMiddle = (Spinner) findViewById(R.id.spinner_middle);
         mSpinnerGroup = (LinearLayout) findViewById(R.id.group_spinners);
         mUserListView = (ListView) findViewById(R.id.list_users);
 
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
+
+        initSpinnerPanelRes();
+    }
+
+    private void initSpinnerPanelRes() {
+        // init area layout.
+        mAreaLayout = (RelativeLayout) this.findViewById(R.id.layout_area);
+        mAreaNameView = (TextView) this.findViewById(R.id.txt_area_name);
+        mAreaIndicator = (ImageView) this.findViewById(R.id.img_area_indicator);
+        mAreaPanel = (RelativeLayout) this.findViewById(R.id.panel_area);
+
+        mXzList = (ListView) this.findViewById(R.id.list_xz);
+        mBusList = (ListView) this.findViewById(R.id.list_bus);
+
+        mAreaLayout.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                if (mCatePanel.isShown()) {
+                    mCatePanel.setVisibility(View.INVISIBLE);
+                }
+
+                if (mAreaPanel.isShown()) {
+                    hideAreaPanel();
+                } else {
+                    showAreaPanel();
+                }
+            }
+
+        });
+
+        // init category layout.
+        mCateLayout = (RelativeLayout) this.findViewById(R.id.layout_cate);
+        mCateNameView = (TextView) this.findViewById(R.id.txt_cate_name);
+        mCateIndicator = (ImageView) this.findViewById(R.id.img_cate_indicator);
+        mCatePanel = (RelativeLayout) this.findViewById(R.id.panel_category);
+
+        mBigCateListView = (ListView) this.findViewById(R.id.list_big_cate);
+        mSmallCateListView = (ListView) this.findViewById(R.id.list_small_cate);
+
+        mCateLayout.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                if (mAreaPanel.isShown()) {
+                    mAreaPanel.setVisibility(View.INVISIBLE);
+                }
+                if (mCatePanel.isShown()) {
+                    hideCatePanel();
+                } else {
+                    showCatePanel();
+                }
+            }
+
+        });
     }
 
     @SuppressLint("NewApi")
@@ -121,7 +244,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         ActionBar actionbar = this.getActionBar();
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
         actionbar.setHomeButtonEnabled(true);
-        actionbar.setIcon(R.drawable.ic_actionbar_back);
+        actionbar.setIcon(R.drawable.ic_actionbar_back_normal);
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
         actionbar.setDisplayShowCustomEnabled(true);
@@ -134,6 +257,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
             title = getResources().getString(R.string.title_user_new);
         } else if (mType == TYPE_POPULATE) {
             title = getResources().getString(R.string.title_user_populate);
+        } else if (mType == TYPE_SEARCH) {
         } else {
             title = getResources().getString(R.string.title_user_info);
         }
@@ -146,13 +270,25 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         actionbar.setCustomView(customView, lp);
     }
 
+    @SuppressLint("NewApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.user_list_actonbar_menu, menu);
 
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        // mSearchView = (SearchView) searchItem.getActionView();
+
+        if (mType == TYPE_SEARCH) {
+            searchItem.setVisible(true);
+            // mSearchView.setOnQueryTextListener(this);
+            // mSearchView.setIconifiedByDefault(false);
+        } else {
+            searchItem.setVisible(false);
+        }
+
         MenuItem locationItem = menu.findItem(R.id.menu_item_location);
-        if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE) {
+        if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE || mType == TYPE_SEARCH) {
             locationItem.setVisible(true);
         } else {
             locationItem.setVisible(false);
@@ -165,63 +301,30 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE) {
             mSpinnerGroup.setVisibility(View.GONE);
         } else {
-            setupSpinnerLeft();
-            setupSpinnerMiddle();
-            setupSpinnerRight();
+            setupXzListView();
+            setupBusListView();
+
+            setAreaNameView();
+
+            setupBigCateListView();
+            setupSmallCateListView();
+
+            setCateNameView();
         }
     }
 
-    private void setupSpinnerLeft() {
-        setAreaNameList();
-        mAreaAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-                mAreaNameList);
-
-        mAreaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerLeft.setAdapter(mAreaAdapter);
-
-        mSpinnerLeft.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mCurAreaPos = position;
-                mLimitIndex = 0;
-                DataModel.clearUserList();
-                requestUserList();
-            }
-
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        mSpinnerLeft.setSelection(mCurAreaPos);
+    private void request() {
+        mHanlder.removeCallbacks(mUsersRequestRunnable);
+        mHanlder.postDelayed(mUsersRequestRunnable, 300);
     }
 
-    private void setupSpinnerMiddle() {
-        setBigCateNameList();
-        mBigCateAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-                mBigCateNameList);
+    private Runnable mUsersRequestRunnable = new Runnable() {
 
-        mBigCateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerMiddle.setAdapter(mBigCateAdapter);
-
-        mSpinnerMiddle.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // TODO
-                mCurBigCatePos = position;
-                mLimitIndex = 0;
-                DataModel.clearUserList();
-                requestUserList();
-            }
-
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        mSpinnerMiddle.setSelection(mCurBigCatePos);
-    }
-
-    private void setupSpinnerRight() {
-        mSpinnerRight.setVisibility(View.INVISIBLE);
-
-    }
+        @Override
+        public void run() {
+            requestUserList();
+        }
+    };
 
     private void requestUserList() {
         if (mLoading) {
@@ -238,11 +341,21 @@ public class UserListActivity extends Activity implements DataUpdateListener {
             arg.put(NetUtil.PARAM_NAME_RQ, String.valueOf(1));
         } else {
 
-            if (mCurAreaPos > 0) {
-                arg.put(NetUtil.PARAM_NAME_XZ, mAreaList.get(mCurAreaPos - 1).mId);
+            if (mType == TYPE_SEARCH) {
+                arg.put(NetUtil.PARAM_NAME_KEYWORD, mKeyword);
             }
 
-            if (mCurBigCatePos > 0) {
+            if (mCurXzAreaPos > 0) {
+                arg.put(NetUtil.PARAM_NAME_XZ, mXzAreaList.get(mCurXzAreaPos - 1).mId);
+            }
+
+            if (mCurBusAreaPos > 0) {
+                arg.put(NetUtil.PARAM_NAME_BUS, mBusAreaList.get(mCurBusAreaPos - 1).mId);
+            }
+
+            if (mCurSmallCatePos > 0) {
+                arg.put(NetUtil.PARAM_NAME_SCATE, mSmallCateList.get(mCurSmallCatePos - 1).mId);
+            } else if (mCurBigCatePos > 0) {
                 arg.put(NetUtil.PARAM_NAME_BCATE, mBigCateList.get(mCurBigCatePos - 1).mId);
             }
         }
@@ -259,7 +372,7 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mUserList = DataModel.getUserListItems();
 
         DataModel.clearUserList();
-        requestUserList();
+        request();
 
         View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                 .inflate(R.layout.user_list_footer, null, false);
@@ -270,12 +383,12 @@ public class UserListActivity extends Activity implements DataUpdateListener {
 
             @Override
             public void onClick(View v) {
-                requestUserList();
+                request();
             }
 
         });
 
-        mUserListAdapter = new UserListAdapter(this, mUserList, null);
+        mUserListAdapter = new UserListAdapter(this, mUserList, mHanlder);
         mUserListView.setAdapter(mUserListAdapter);
         mUserListView.setOnItemClickListener(mUserItemClickListener);
 
@@ -310,6 +423,8 @@ public class UserListActivity extends Activity implements DataUpdateListener {
                 break;
             case R.id.menu_item_location:
                 break;
+            case R.id.action_search:
+                gotoSearchActivity();
             default:
                 break;
         }
@@ -322,8 +437,10 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         // TODO Auto-generated method stub
         super.onDestroy();
 
-        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAES, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_BIGCATES, this);
+        DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_SMALLCATES, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
 
@@ -342,34 +459,20 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         super.onResume();
     }
 
-    private void setAreaNameList() {
-        mAreaList = null;
-        mAreaList = DataModel.getAreaListItems(Integer.valueOf(mCurrentCityId));
-        if (mAreaList != null) {
-            if (mAreaNameList == null) {
-                mAreaNameList = new ArrayList<String>();
-            } else {
-                mAreaNameList.clear();
-            }
-            mAreaNameList.add("全部商户");
-            for (Area area : mAreaList) {
-                mAreaNameList.add(area.mName);
-            }
-        }
-    }
-
     private void setBigCateNameList() {
         mBigCateList = null;
         mBigCateList = DataModel.getBigCatesListItems();
         if (mBigCateList != null) {
             if (mBigCateNameList == null) {
-                mBigCateNameList = new ArrayList<String>();
+                mBigCateNameList = new ArrayList<PanelListItem>();
             } else {
                 mBigCateNameList.clear();
             }
-            mBigCateNameList.add("全部分类");
+            PanelListItem pli = new PanelListItem(PanelListItem.TYPE_LEFT, "全部分类", false);
+            mBigCateNameList.add(pli);
             for (BigCategory bigCate : mBigCateList) {
-                mBigCateNameList.add(bigCate.mName);
+                pli = new PanelListItem(PanelListItem.TYPE_LEFT, bigCate.mName, false);
+                mBigCateNameList.add(pli);
             }
         }
     }
@@ -378,40 +481,6 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         mUserList = null;
         mUserList = DataModel.getUserListItems();
         mUserListAdapter.setUserList(mUserList);
-    }
-
-    private void updateSpinnerLeft(int status) {
-        Log.d(TAG, "updateSpinner: status = " + status);
-        switch (status) {
-            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
-                mLoadingBar.setVisibility(View.VISIBLE);
-                break;
-            case DataUpdater.DATA_UPDATE_STATUS_READY:
-                mLoadingBar.setVisibility(View.GONE);
-                setAreaNameList();
-                mAreaAdapter.notifyDataSetChanged();
-                break;
-            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
-                mLoadingBar.setVisibility(View.GONE);
-                break;
-        }
-    }
-
-    private void updateSpinnerMiddle(int status) {
-        Log.d(TAG, "updateSpinner: status = " + status);
-        switch (status) {
-            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
-                mLoadingBar.setVisibility(View.VISIBLE);
-                break;
-            case DataUpdater.DATA_UPDATE_STATUS_READY:
-                mLoadingBar.setVisibility(View.GONE);
-                setBigCateNameList();
-                mBigCateAdapter.notifyDataSetChanged();
-                break;
-            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
-                mLoadingBar.setVisibility(View.GONE);
-                break;
-        }
     }
 
     private void updateUserListView(int status) {
@@ -461,11 +530,20 @@ public class UserListActivity extends Activity implements DataUpdateListener {
                     int dataType = msg.arg2;
                     int status = msg.arg1;
                     switch (dataType) {
-                        case DataUpdater.DATA_UPDATE_TYPE_AREAES:
-                            updateSpinnerLeft(status);
+                        case DataUpdater.DATA_UPDATE_TYPE_AREAE_XZ:
+                            // updateSpinnerLeft(status);
+                            updateXzAreaList(status);
+                            break;
+                        case DataUpdater.DATA_UPDATE_TYPE_AREAE_BUS:
+                            updateBusAreaList(status);
                             break;
                         case DataUpdater.DATA_UPDATE_TYPE_BIGCATES:
-                            updateSpinnerMiddle(status);
+                            // updateSpinnerMiddle(status);
+                            updateBitCateList(status);
+                            break;
+                        case DataUpdater.DATA_UPDATE_TYPE_SMALLCATES:
+                            // updateSpinnerMiddle(status);
+                            updateSmallCateList(status);
                             break;
                         case DataUpdater.DATA_UPDATE_TYPE_USERS:
                             updateUserListView(status);
@@ -494,6 +572,534 @@ public class UserListActivity extends Activity implements DataUpdateListener {
         msg.arg1 = status;
         msg.arg2 = dataType;
         msg.sendToTarget();
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    private void gotoSearchActivity() {
+        if (mCurrentCityId == null) {
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClass(this, SearchActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCityId);
+        this.startActivity(intent);
+    }
+
+    private void setXzAreaNameList() {
+        if (mCurrentCityId == null) {
+            return;
+        }
+        mXzAreaList = null;
+        mXzAreaList = DataModel.getXzAreaListItems(Integer.valueOf(mCurrentCityId));
+        if (mXzAreaList != null) {
+            if (mXzAreaNameList == null) {
+                mXzAreaNameList = new ArrayList<PanelListItem>();
+            } else {
+                mXzAreaNameList.clear();
+            }
+
+            PanelListItem pli = new PanelListItem(PanelListItem.TYPE_LEFT, getResources()
+                    .getString(R.string.all_area), false);
+
+            mXzAreaNameList.add(pli);
+            for (Area area : mXzAreaList) {
+                pli = new PanelListItem(PanelListItem.TYPE_LEFT, area.mName, false);
+                mXzAreaNameList.add(pli);
+            }
+        }
+    }
+
+    private void updateXzAreaList(int status) {
+        Log.d(TAG, "updateXzAreaList: status = " + status);
+        if (mXzAreaAdapter == null) {
+            Log.e(TAG, "updateXzAreaList: mXzAreaAdapter is null.");
+            return;
+        }
+
+        switch (status) {
+            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                mLoadingBar.setVisibility(View.VISIBLE);
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_READY:
+                mLoadingBar.setVisibility(View.GONE);
+                setXzAreaNameList();
+                mXzAreaAdapter.notifyDataSetChanged();
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
+                mLoadingBar.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    private void setBusAreaNameList() {
+        mBusAreaList = null;
+        if (mCurrentXzId != null) {
+            mBusAreaList = DataModel.getBusAreaListItems(Integer.valueOf(mCurrentXzId));
+        }
+
+        if (mBusAreaNameList == null) {
+            mBusAreaNameList = new ArrayList<PanelListItem>();
+        } else {
+            mBusAreaNameList.clear();
+        }
+        String allBus = this.getResources().getString(R.string.all_bus);
+        if (mBusAreaList != null) {
+            Area xzSelected = DataModel
+                    .getXzAreaById(Integer.valueOf(mCurrentCityId), mCurrentXzId);
+
+            if (xzSelected != null) {
+                allBus = String.format(allBus, xzSelected.mName);
+            } else {
+                allBus = String.format(allBus, "");
+            }
+        } else {
+            allBus = this.getResources().getString(R.string.all_area);
+        }
+
+        PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, allBus, false);
+        mBusAreaNameList.add(pli);
+
+        if (mBusAreaList != null) {
+            for (Area area : mBusAreaList) {
+                pli = new PanelListItem(PanelListItem.TYPE_RIGHT, area.mName, false);
+                mBusAreaNameList.add(pli);
+            }
+        }
+    }
+
+    private void setSmallCateNameList() {
+        if (mCurBigCatePos < 0) {
+            return;
+        }
+
+        mSmallCateList = null;
+        if (mCurBigCateId != null) {
+            mSmallCateList = DataModel.getSmallCateListItems(Integer.valueOf(mCurBigCateId));
+        }
+
+        if (mSmallCateNameList == null) {
+            mSmallCateNameList = new ArrayList<PanelListItem>();
+        } else {
+            mSmallCateNameList.clear();
+        }
+        String allCate = this.getResources().getString(R.string.all_category);
+        PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, allCate, false);
+        mSmallCateNameList.add(pli);
+        if (mSmallCateList != null) {
+            for (SmallCategory cate : mSmallCateList) {
+                pli = new PanelListItem(PanelListItem.TYPE_RIGHT, cate.mName, false);
+                mSmallCateNameList.add(pli);
+            }
+        }
+    }
+
+    private void updateBusAreaList(int status) {
+        Log.d(TAG, "updateBusAreaList: status = " + status);
+        if (mBusAreaAdapter == null) {
+            Log.e(TAG, "updateBusAreaList: mBusAreaAdapter is null.");
+            return;
+        }
+        switch (status) {
+            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                mLoadingBar.setVisibility(View.VISIBLE);
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_READY:
+                mLoadingBar.setVisibility(View.GONE);
+                setBusAreaNameList();
+                mBusAreaAdapter.notifyDataSetChanged();
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
+                mLoadingBar.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    private void initAnimation() {
+        if (mAnimAreaPanelShow == null) {
+            mAnimAreaPanelShow = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topin);
+
+            mAnimAreaPanelShow.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mAreaPanel.setVisibility(View.VISIBLE);
+                    mAreaPanelAnimating = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
+
+        if (mAnimAreaPanelHide == null) {
+            mAnimAreaPanelHide = AnimationUtils
+                    .loadAnimation(this, R.anim.dropdown_activity_topout);
+
+            mAnimAreaPanelHide.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mAreaPanel.setVisibility(View.INVISIBLE);
+                    mAreaPanelAnimating = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
+
+        if (mAnimCatePanelShow == null) {
+            mAnimCatePanelShow = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topin);
+
+            mAnimCatePanelShow.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mCatePanel.setVisibility(View.VISIBLE);
+                    mCatePanelAnimating = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
+
+        if (mAnimCatePanelHide == null) {
+            mAnimCatePanelHide = AnimationUtils
+                    .loadAnimation(this, R.anim.dropdown_activity_topout);
+
+            mAnimCatePanelHide.setAnimationListener(new AnimationListener() {
+                @Override
+                public void onAnimationEnd(Animation arg0) {
+                    mCatePanel.setVisibility(View.INVISIBLE);
+                    mCatePanelAnimating = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation arg0) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animation arg0) {
+                }
+            });
+        }
+    }
+
+    private void showAreaPanel() {
+        mAreaIndicator.setImageResource(R.drawable.ic_arrow_up);
+
+        if (mAreaPanelAnimating) {
+            return;
+        }
+
+        mAreaPanel.clearAnimation();
+        mAreaPanel.startAnimation(mAnimAreaPanelShow);
+        mAreaPanel.postInvalidate();
+    }
+
+    private void hideAreaPanel() {
+        mAreaIndicator.setImageResource(R.drawable.ic_arrow_down);
+
+        if (mAreaPanelAnimating) {
+            return;
+        }
+
+        mAreaPanel.clearAnimation();
+        mAreaPanel.startAnimation(mAnimAreaPanelHide);
+        mAreaPanel.postInvalidate();
+    }
+
+    private void showCatePanel() {
+        mCateIndicator.setImageResource(R.drawable.ic_arrow_up);
+
+        if (mCatePanelAnimating) {
+            return;
+        }
+
+        mCatePanel.clearAnimation();
+        mCatePanel.startAnimation(mAnimCatePanelShow);
+        mCatePanel.postInvalidate();
+    }
+
+    private void hideCatePanel() {
+        mCateIndicator.setImageResource(R.drawable.ic_arrow_down);
+
+        if (mCatePanelAnimating) {
+            return;
+        }
+
+        mCatePanel.clearAnimation();
+        mCatePanel.startAnimation(mAnimCatePanelHide);
+        mCatePanel.postInvalidate();
+    }
+
+    private void setupXzListView() {
+        setXzAreaNameList();
+
+        mXzAreaAdapter = new PanelListAdapter(this, mXzAreaNameList, mHanlder);
+
+        mXzList.setAdapter(mXzAreaAdapter);
+
+        mXzList.setSelection(mCurXzAreaPos);
+        mXzAreaNameList.get(mCurXzAreaPos).mSelected = true;
+
+        if (mCurXzAreaPos > 0) {
+            mCurrentXzId = mXzAreaList.get(mCurXzAreaPos - 1).mId;
+        }
+        mXzList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mXzAreaNameList == null || mXzAreaNameList.isEmpty() || position < 0
+                        || position >= mXzAreaNameList.size()) {
+                    return;
+                }
+
+                mPreXzAreaPos = mCurXzAreaPos;
+                mCurXzAreaPos = position;
+                mXzAreaNameList.get(mPreXzAreaPos).mSelected = false;
+                mXzAreaNameList.get(mCurXzAreaPos).mSelected = true;
+                mXzAreaAdapter.notifyDataSetChanged();
+
+                mCurBusAreaPos = 0;
+
+                if (position == 0) {
+                    mBusAreaList = null;
+
+                    if (!mBusAreaNameList.isEmpty()) {
+                        mBusAreaNameList.clear();
+                    }
+
+                    String name = UserListActivity.this.getResources().getString(R.string.all_area);
+                    PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, name, false);
+
+                    mBusAreaNameList.add(pli);
+                    mBusAreaAdapter.notifyDataSetChanged();
+                } else if (position > 0) {
+                    mCurrentXzId = mXzAreaList.get(position - 1).mId;
+                    updateBusAreaList(DataUpdater.DATA_UPDATE_STATUS_READY);
+                }
+            }
+        });
+    }
+
+    private void setAreaNameView() {
+        if (mCurXzAreaPos == 0 && mCurBusAreaPos == 0) {
+            mAreaNameView.setText(getResources().getText(R.string.all_area));
+        } else if (mCurBusAreaPos == 0) {
+            mAreaNameView.setText(mXzAreaNameList.get(mCurXzAreaPos).mName);
+        } else {
+            mAreaNameView.setText(mBusAreaNameList.get(mCurBusAreaPos).mName);
+        }
+    }
+
+    private void setCateNameView() {
+        if (mCurBigCatePos == 0 && mCurSmallCatePos == 0) {
+            mCateNameView.setText(getResources().getText(R.string.all_category));
+        } else if (mCurSmallCatePos == 0) {
+            mCateNameView.setText(mBigCateNameList.get(mCurBigCatePos).mName);
+        } else {
+            mCateNameView.setText(mSmallCateNameList.get(mCurSmallCatePos).mName);
+        }
+    }
+
+    private void setupBusListView() {
+        setBusAreaNameList();
+
+        mBusAreaAdapter = new PanelListAdapter(this, mBusAreaNameList, mHanlder);
+
+        mBusList.setAdapter(mBusAreaAdapter);
+
+        mBusList.setSelection(mCurBusAreaPos);
+        mBusAreaNameList.get(mCurBusAreaPos).mSelected = true;
+
+        mBusList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mBusAreaNameList == null || mBusAreaNameList.isEmpty() || position < 0
+                        || position >= mBusAreaNameList.size()) {
+                    return;
+                }
+                mPreBusAreaPos = mCurBusAreaPos;
+                mCurBusAreaPos = position;
+                mBusAreaNameList.get(mPreBusAreaPos).mSelected = false;
+                mBusAreaNameList.get(mCurBusAreaPos).mSelected = true;
+                mBusAreaAdapter.notifyDataSetChanged();
+                if (position > 0) {
+                    mCurrentBusId = mBusAreaList.get(position - 1).mId;
+                }
+
+                setAreaNameView();
+                hideAreaPanel();
+
+                mLimitIndex = 0;
+                DataModel.clearUserList();
+                request();
+            }
+
+        });
+    }
+
+    private void setupBigCateListView() {
+        setBigCateNameList();
+
+        mBigCateAdapter = new PanelListAdapter(this, mBigCateNameList, mHanlder);
+
+        mBigCateListView.setAdapter(mBigCateAdapter);
+
+        mBigCateListView.setSelection(mCurBigCatePos);
+        mBigCateNameList.get(mCurBigCatePos).mSelected = true;
+
+        if (mCurBigCatePos > 0) {
+            mCurBigCateId = mBigCateList.get(mCurBigCatePos - 1).mId;
+        }
+        mBigCateListView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mBigCateNameList == null || mBigCateNameList.isEmpty() || position < 0
+                        || position >= mBigCateNameList.size()) {
+                    return;
+                }
+
+                mPreBigCatePos = mCurBigCatePos;
+                mCurBigCatePos = position;
+                mBigCateNameList.get(mPreBigCatePos).mSelected = false;
+                mBigCateNameList.get(mCurBigCatePos).mSelected = true;
+                mBigCateAdapter.notifyDataSetChanged();
+
+                mCurSmallCatePos = 0;
+
+                if (position == 0) {
+                    mSmallCateList = null;
+
+                    if (!mSmallCateNameList.isEmpty()) {
+                        mSmallCateNameList.clear();
+                    }
+
+                    String name = UserListActivity.this.getResources().getString(
+                            R.string.all_category);
+                    PanelListItem pli = new PanelListItem(PanelListItem.TYPE_RIGHT, name, false);
+                    mSmallCateNameList.add(pli);
+                    mSmallCateAdapter.notifyDataSetChanged();
+                } else if (position > 0) {
+                    mCurBigCateId = mBigCateList.get(position - 1).mId;
+                    updateSmallCateList(DataUpdater.DATA_UPDATE_STATUS_READY);
+                }
+
+            }
+
+        });
+    }
+
+    private void setupSmallCateListView() {
+        setSmallCateNameList();
+
+        mSmallCateAdapter = new PanelListAdapter(this, mSmallCateNameList, mHanlder);
+
+        mSmallCateListView.setAdapter(mSmallCateAdapter);
+
+        mSmallCateListView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                // TODO Auto-generated method stub
+                if (mSmallCateNameList == null || mSmallCateNameList.isEmpty() || position < 0
+                        || position >= mSmallCateNameList.size()) {
+                    return;
+                }
+                mPreSmallCatePos = mCurSmallCatePos;
+                mCurSmallCatePos = position;
+                mSmallCateNameList.get(mPreSmallCatePos).mSelected = false;
+                mSmallCateNameList.get(mCurSmallCatePos).mSelected = true;
+                mSmallCateAdapter.notifyDataSetChanged();
+
+                if (position > 0) {
+                    mCurSmallCateId = mSmallCateList.get(position - 1).mId;
+                }
+
+                setCateNameView();
+                hideCatePanel();
+
+                mLimitIndex = 0;
+                DataModel.clearUserList();
+                request();
+            }
+        });
+    }
+
+    private void updateBitCateList(int status) {
+        Log.d(TAG, "updateBitCateList: status = " + status);
+        if (mBigCateAdapter == null) {
+            Log.e(TAG, "updateBitCateList: mBigCateAdapter is null.");
+            return;
+        }
+        switch (status) {
+            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                mLoadingBar.setVisibility(View.VISIBLE);
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_READY:
+                mLoadingBar.setVisibility(View.GONE);
+                setBigCateNameList();
+                mBigCateAdapter.notifyDataSetChanged();
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
+                mLoadingBar.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    private void updateSmallCateList(int status) {
+        Log.d(TAG, "updateSmallCateList: status = " + status);
+        if (mSmallCateAdapter == null) {
+            Log.e(TAG, "updateSmallCateList: mSmallCateAdapter is null.");
+            return;
+        }
+        switch (status) {
+            case DataUpdater.DATA_UPDATE_STATUS_LOADING:
+                mLoadingBar.setVisibility(View.VISIBLE);
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_READY:
+                mLoadingBar.setVisibility(View.GONE);
+                setSmallCateNameList();
+                mSmallCateAdapter.notifyDataSetChanged();
+                break;
+            case DataUpdater.DATA_UPDATE_STATUS_ERROR:
+                mLoadingBar.setVisibility(View.GONE);
+                break;
+        }
     }
 
 }

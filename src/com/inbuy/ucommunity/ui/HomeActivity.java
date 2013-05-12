@@ -13,14 +13,15 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Spinner;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Category;
@@ -82,8 +83,10 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         actionbar.setCustomView(mCustomView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) mCustomView.getLayoutParams();
-        lp.gravity &= Gravity.CENTER_HORIZONTAL;
+        lp.gravity &= Gravity.CENTER;
         actionbar.setCustomView(mCustomView, lp);
+
+        mCustomView.setOnClickListener(mActionbarTitleListener);
 
         actionbar.setDisplayShowCustomEnabled(true);
 
@@ -99,37 +102,59 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                 cities[i] = String.format(titleFormat, name);
             }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                    R.layout.home_actionbar_spinner_item, cities);
+            TextView titleView = (TextView) mCustomView.findViewById(R.id.txt_city_title);
 
-            Spinner spinner = (Spinner) mCustomView.findViewById(R.id.spinner);
-            spinner.setAdapter(adapter);
+            titleView.setText(cities[0]);
 
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            ImageView downView = (ImageView) mCustomView.findViewById(R.id.img_down);
+            downView.setOnClickListener(mActionbarTitleListener);
 
-            spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            // ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+            // R.layout.home_actionbar_spinner_item, cities);
 
-                @Override
-                public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                    Log.d(TAG, "OnItemSelectedListener: onItemSelected position = " + position);
-                    if (position >= mCityList.size() || position < 0) {
-                        Log.e(TAG, "onItemSelected: itemPosition is " + position
-                                + ", out of bound.");
-                        return;
-                    }
-                    mCurrentCity = mCityList.get(position);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> arg0) {
-                    // TODO Auto-generated method stub
-
-                }
-
-            });
+            // Spinner spinner = (Spinner)
+            // mCustomView.findViewById(R.id.spinner);
+            // spinner.setAdapter(adapter);
+            //
+            // adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            //
+            // spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            //
+            // @Override
+            // public void onItemSelected(AdapterView<?> arg0, View arg1, int
+            // position, long arg3) {
+            // Log.d(TAG, "OnItemSelectedListener: onItemSelected position = " +
+            // position);
+            // if (position >= mCityList.size() || position < 0) {
+            // Log.e(TAG, "onItemSelected: itemPosition is " + position
+            // + ", out of bound.");
+            // return;
+            // }
+            // mCurrentCity = mCityList.get(position);
+            // }
+            //
+            // @Override
+            // public void onNothingSelected(AdapterView<?> arg0) {
+            // // TODO Auto-generated method stub
+            //
+            // }
+            //
+            // });
 
         }
     }
+
+    private OnClickListener mActionbarTitleListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            // TODO Auto-generated method stub
+            Toast.makeText(HomeActivity.this, "Go to city selector page.", Toast.LENGTH_SHORT)
+                    .show();
+
+        }
+
+    };
 
     @Override
     protected void onDestroy() {
@@ -142,6 +167,17 @@ public class HomeActivity extends Activity implements DataUpdateListener {
 
     private void initViewsRes() {
         mSearchView = (EditText) this.findViewById(R.id.edit_search_user);
+        mSearchView.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (v.equals(mSearchView)) {
+                    gotoSearchActivity();
+                }
+            }
+
+        });
+
         mGridView = (GridView) this.findViewById(R.id.grid_categories);
 
         mGridView.setOnItemClickListener(new OnItemClickListener() {
@@ -156,6 +192,7 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                     case 1:
                         break;
                     case 2:
+                        gotoSearchActivity();
                         break;
                     case 3:
                         gotoRecommandActivity();
@@ -205,6 +242,16 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         intent.setClass(this, UserListActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
         intent.putExtra(UserListActivity.EXTRA_TYPE, UserListActivity.TYPE_POPULATE);
+        this.startActivity(intent);
+    }
+
+    private void gotoSearchActivity() {
+        if (mCurrentCity == null) {
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClass(this, SearchActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
         this.startActivity(intent);
     }
 

@@ -36,7 +36,7 @@ public class NetUtil {
     public static final String ACTION_GET_CITY = "getCity";
     public static final String ACTION_GET_AREA = "getArea";
     public static final String ACTION_GET_BIGCATE = "getBigCate";
-    public static final String ACTION_GET_SMACATE = "getSmaCate";
+    public static final String ACTION_GET_SMALLCATE = "getSmaCate";
     public static final String ACTION_SEARCH_USER = "searchUser";
     public static final String ACTION_GET_PERSON = "getPerson";
     public static final String ACTION_GET_CATENAME = "getCateName";
@@ -87,6 +87,19 @@ public class NetUtil {
         return url;
     }
 
+    public static String getSmallCateUrl(String bigCateId) {
+        StringBuffer sb = new StringBuffer(URL_API_SERVER);
+        sb.append(ACTION_GET_SMALLCATE).append(DELIMITER).append(PARAM_NAME_APPKEY)
+                .append(DELIMITER).append(APP_KEY).append(DELIMITER).append(PARAM_NAME_APPSECRET)
+                .append(DELIMITER).append(APP_SECRET).append(DELIMITER).append(PARAM_NAME_UPID)
+                .append(DELIMITER).append(bigCateId);
+
+        String url = sb.toString();
+        Log.d(TAG, "getSmallCateUrl: url = " + url);
+
+        return url;
+    }
+
     public static String getPersonUrl(String uid) {
         StringBuffer sb = new StringBuffer(URL_API_SERVER);
         sb.append(ACTION_GET_PERSON).append(DELIMITER).append(PARAM_NAME_APPKEY).append(DELIMITER)
@@ -114,6 +127,11 @@ public class NetUtil {
 
         if (cityId != null && !cityId.isEmpty()) {
             sb.append(DELIMITER).append(PARAM_NAME_CITY).append(DELIMITER).append(cityId);
+        }
+
+        String keyword = ids.get(PARAM_NAME_KEYWORD);
+        if (keyword != null && !keyword.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_KEYWORD).append(DELIMITER).append(keyword);
         }
 
         String xzId = ids.get(PARAM_NAME_XZ);

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
 import com.inbuy.ucommunity.data.City;
+import com.inbuy.ucommunity.data.SmallCategory;
 import com.inbuy.ucommunity.data.User;
 import com.inbuy.ucommunity.util.JSONUtil;
 import com.inbuy.ucommunity.util.NetUtil;
@@ -44,7 +45,7 @@ public class DataUpdater {
 
     public final static int DATA_UPDATE_TYPE_CITIES = 0;
 
-    public final static int DATA_UPDATE_TYPE_AREAES = 1;
+    public final static int DATA_UPDATE_TYPE_AREAE_XZ = 1;
 
     public final static int DATA_UPDATE_TYPE_BIGCATES = 2;
 
@@ -54,7 +55,11 @@ public class DataUpdater {
 
     public final static int DATA_UPDATE_TYPE_USER_PHOTO = 5;
 
-    public final static int DATA_UPDATE_TYPE_MAX = 6;
+    public final static int DATA_UPDATE_TYPE_AREAE_BUS = 6;
+
+    public final static int DATA_UPDATE_TYPE_SMALLCATES = 7;
+
+    public final static int DATA_UPDATE_TYPE_MAX = 8;
 
     // <request id, ServerDataRequest>
     private static Hashtable<Integer, ServerDataRequest> mServerDataRequests = new Hashtable<Integer, ServerDataRequest>();
@@ -159,7 +164,8 @@ public class DataUpdater {
                         mServerResponseListener);
             }
                 break;
-            case DATA_UPDATE_TYPE_AREAES: {
+            case DATA_UPDATE_TYPE_AREAE_XZ:
+            case DATA_UPDATE_TYPE_AREAE_BUS: {
                 if (arg != null && arg instanceof String) {
                     uuid = (String) arg;
                     requestId = mServerConnector.httpGet(NetUtil.getAreaUrl(uuid), dataType,
@@ -170,6 +176,14 @@ public class DataUpdater {
             case DATA_UPDATE_TYPE_BIGCATES: {
                 requestId = mServerConnector.httpGet(NetUtil.getBigCateUrl(), dataType,
                         mServerResponseListener);
+            }
+                break;
+            case DATA_UPDATE_TYPE_SMALLCATES: {
+                if (arg != null && arg instanceof String) {
+                    uuid = (String) arg;
+                    requestId = mServerConnector.httpGet(NetUtil.getSmallCateUrl(uuid), dataType,
+                            mServerResponseListener);
+                }
             }
                 break;
             case DATA_UPDATE_TYPE_USERS: {
@@ -331,18 +345,33 @@ public class DataUpdater {
                         }
 
                         break;
-                    case DATA_UPDATE_TYPE_AREAES:
+                    case DATA_UPDATE_TYPE_AREAE_XZ:
                         if (response != null && response instanceof JSONArray) {
                             ArrayList<Area> areaList = null;
                             try {
                                 areaList = JSONUtil.parseResonseAreaList((JSONArray) response);
                             } catch (JSONException e) {
-                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES. e = " + e);
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_AREAE_XZ. e = " + e);
                                 e.printStackTrace();
                             }
-                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_AREAES: areaList size = "
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_AREAE_XZ: areaList size = "
                                     + areaList.size());
-                            DataModel.setAreaListItems(Integer.valueOf(request.mUuid), areaList);
+                            DataModel.setXzAreaListItems(Integer.valueOf(request.mUuid), areaList);
+                        }
+
+                        break;
+                    case DATA_UPDATE_TYPE_AREAE_BUS:
+                        if (response != null && response instanceof JSONArray) {
+                            ArrayList<Area> areaList = null;
+                            try {
+                                areaList = JSONUtil.parseResonseAreaList((JSONArray) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_AREAE_BUS. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_AREAE_BUS: areaList size = "
+                                    + areaList.size());
+                            DataModel.setBusAreaListItems(Integer.valueOf(request.mUuid), areaList);
                         }
 
                         break;
@@ -359,6 +388,24 @@ public class DataUpdater {
                             Log.d(TAG, "onReceive: DATA_UPDATE_TYPE_BIGCATES: bigcateList size = "
                                     + bigcateList.size());
                             DataModel.setBigCateListItems(bigcateList);
+                        }
+
+                        break;
+                    case DATA_UPDATE_TYPE_SMALLCATES:
+                        if (response != null && response instanceof JSONArray) {
+                            ArrayList<SmallCategory> smallCateList = null;
+                            try {
+                                smallCateList = JSONUtil
+                                        .parseResonseSmallcateList((JSONArray) response);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "onReceive: DATA_UPDATE_TYPE_SMALLCATES. e = " + e);
+                                e.printStackTrace();
+                            }
+                            Log.d(TAG,
+                                    "onReceive: DATA_UPDATE_TYPE_SMALLCATES: smallcateList size = "
+                                            + smallCateList.size());
+                            DataModel.setSmallCateListItems(Integer.valueOf(request.mUuid),
+                                    smallCateList);
                         }
 
                         break;

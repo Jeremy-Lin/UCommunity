@@ -13,6 +13,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.util.Log;
 
+import com.inbuy.ucommunity.R;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -271,6 +273,35 @@ public class Util {
         }
 
         return strs;
+    }
+
+    public static int getStarsResourceId(int stars) {
+        int resId = R.drawable.ic_star_4;
+        switch (stars) {
+            case 0:
+                // FIXME
+                resId = R.drawable.ic_star_1;
+                break;
+            case 1:
+                resId = R.drawable.ic_star_1;
+                break;
+            case 2:
+                resId = R.drawable.ic_star_2;
+                break;
+            case 3:
+                resId = R.drawable.ic_star_3;
+                break;
+            case 4:
+                resId = R.drawable.ic_star_4;
+                break;
+            case 5:
+                // FIXME
+                resId = R.drawable.ic_star_4;
+                break;
+            default:
+                break;
+        }
+        return resId;
     }
 
     public static Bitmap createStarsImageBitmap(Bitmap originalImage, int stars) {

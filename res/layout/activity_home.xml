@@ -35,6 +35,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="5dp"
             android:background="@null"
+            android:editable="false"
             android:hint="@string/hint_search" />
     </LinearLayout>
 
@@ -55,5 +56,10 @@
             android:numColumns="3"
             android:verticalSpacing="30dp" />
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/home_bottom_bar" />
 
 </LinearLayout>

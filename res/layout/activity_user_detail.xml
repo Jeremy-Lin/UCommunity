@@ -32,7 +32,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/ic_divider" />
+                    android:background="@drawable/ic_user_detail_divider" />
             </LinearLayout>
 
             <LinearLayout
@@ -64,7 +64,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/ic_divider" />
+                    android:background="@drawable/ic_user_detail_divider" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

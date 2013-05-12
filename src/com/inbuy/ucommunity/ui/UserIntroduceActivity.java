@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -89,7 +88,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
 
         actionbar.setHomeButtonEnabled(true);
-        actionbar.setIcon(R.drawable.ic_actionbar_back);
+        actionbar.setIcon(R.drawable.ic_actionbar_back_normal);
 
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
@@ -205,12 +204,17 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         if (mUser == null || mTitleUserStarView == null) {
             return;
         }
-        Drawable drawable = getResources().getDrawable(R.drawable.ic_star_light);
-        Bitmap bitmap = Util.drawableToBitmap(drawable);
-
         int starCount = Integer.valueOf(mUser.mStar);
-        Bitmap starBitmap = Util.createStarsImageBitmap(bitmap, starCount);
-        mTitleUserStarView.setImageBitmap(starBitmap);
+
+        // Drawable drawable =
+        // getResources().getDrawable(R.drawable.ic_star_light);
+        // Bitmap bitmap = Util.drawableToBitmap(drawable);
+
+        // Bitmap starBitmap = Util.createStarsImageBitmap(bitmap, starCount);
+        // mTitleUserStarView.setImageBitmap(starBitmap);
+        int resId = Util.getStarsResourceId(starCount);
+        mTitleUserStarView.setImageResource(resId);
+
     }
 
     private void gotoUserDetailScreen() {
