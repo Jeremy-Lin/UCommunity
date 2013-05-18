@@ -276,11 +276,10 @@ public class Util {
     }
 
     public static int getStarsResourceId(int stars) {
-        int resId = R.drawable.ic_star_4;
+        int resId = R.drawable.ic_star_5;
         switch (stars) {
             case 0:
-                // FIXME
-                resId = R.drawable.ic_star_1;
+                resId = R.drawable.ic_star_0;
                 break;
             case 1:
                 resId = R.drawable.ic_star_1;
@@ -295,8 +294,7 @@ public class Util {
                 resId = R.drawable.ic_star_4;
                 break;
             case 5:
-                // FIXME
-                resId = R.drawable.ic_star_4;
+                resId = R.drawable.ic_star_5;
                 break;
             default:
                 break;

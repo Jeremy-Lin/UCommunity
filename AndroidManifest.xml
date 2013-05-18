@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="14"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -26,21 +26,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.inbuy.ucommunity.ui.BigCategoryActivity" >
+        <activity
+            android:name="com.inbuy.ucommunity.ui.BigCategoryActivity"
+            android:theme="@style/UCommTheme" >
         </activity>
         <activity android:name="com.inbuy.ucommunity.ui.HomeActivity" >
         </activity>
         <activity
             android:name="com.inbuy.ucommunity.ui.UserListActivity"
-            android:launchMode="singleTask" >
+            android:launchMode="singleTask"
+            android:theme="@style/UCommTheme" >
         </activity>
-        <activity android:name="com.inbuy.ucommunity.ui.UserIntroduceActivity" >
+        <activity
+            android:name="com.inbuy.ucommunity.ui.UserIntroduceActivity"
+            android:theme="@style/UCommTheme" >
         </activity>
-        <activity android:name="com.inbuy.ucommunity.ui.UserDetailActivity" >
+        <activity
+            android:name="com.inbuy.ucommunity.ui.UserDetailActivity"
+            android:theme="@style/UCommTheme" >
         </activity>
         <activity
             android:name="com.inbuy.ucommunity.ui.SearchActivity"
-            android:launchMode="singleTask" >
+            android:launchMode="singleTask"
+            android:theme="@style/UCommTheme" >
         </activity>
     </application>
 
