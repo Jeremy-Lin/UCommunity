@@ -24,6 +24,7 @@ import android.widget.SearchView.OnQueryTextListener;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.Util;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -125,6 +126,9 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
         mSearchView.setOnQueryTextListener(this);
         mSearchView.setIconifiedByDefault(false);
         mSearchView.requestFocus();
+
+        Util.custimizeSearchView(mSearchView);
+
         return true;
     }
 
@@ -213,6 +217,9 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
             // Go to search result activity.
             gotoSearchResult(query);
         }
+
+        mSearchView.setQuery("", false);
+        finish();
         return false;
     }
 

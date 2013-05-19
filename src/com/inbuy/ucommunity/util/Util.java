@@ -15,6 +15,8 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.SearchView;
 
 import com.inbuy.ucommunity.R;
 
@@ -393,5 +395,24 @@ public class Util {
             Log.i(TAG, "isWIFIEnabled");
         }
         return enable;
+    }
+
+    public static void custimizeSearchView(SearchView searchView) {
+        if (searchView == null) {
+            return;
+        }
+
+        int searchPlateId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_plate", null, null);
+        // Getting the 'search_plate' LinearLayout.
+        View searchPlate = searchView.findViewById(searchPlateId);
+        // Setting background of 'search_plate' to earlier defined drawable.
+        searchPlate.setBackgroundResource(R.drawable.action_search_bar_bg);
+
+        // int searchMagId = searchView.getContext().getResources()
+        // .getIdentifier("android:id/search_mag_icon", null, null);
+        // View searchMag = searchView.findViewById(searchMagId);
+        // searchMag.setVisibility(View.GONE);
+
     }
 }

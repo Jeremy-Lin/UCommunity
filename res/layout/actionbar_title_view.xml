@@ -14,4 +14,16 @@
         android:textColor="#ffffff"
         android:textSize="20sp" />
 
+    <EditText
+        android:id="@+id/search_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@drawable/action_search_bar_bg"
+        android:editable="false"
+        android:gravity="left|center_vertical"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:visibility="gone" />
+
 </LinearLayout>

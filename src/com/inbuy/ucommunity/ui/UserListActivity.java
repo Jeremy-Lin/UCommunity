@@ -6,7 +6,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,15 +27,16 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Area;
@@ -77,8 +77,6 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private ListView mUserListView;
 
     private ProgressBar mLoadingBar;
-
-    private SearchView mSearchView;
 
     PanelListAdapter mXzAreaAdapter;
     ArrayList<PanelListItem> mXzAreaNameList = new ArrayList<PanelListItem>();
@@ -151,6 +149,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     private String mKeyword;
 
+    private EditText mSearchView;
+
     private int mLimitIndex = 0;
 
     private boolean mLoading = false;
@@ -220,28 +220,24 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     }
 
     private void initLocation() {
+        if (mType != TYPE_NEARBY) {
+            return;
+        }
+
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        // if
-        // (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-        // {
-        // mProviderName = LocationManager.NETWORK_PROVIDER;
-        // } else if
-        // (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-        // mProviderName = LocationManager.GPS_PROVIDER;
-        // } else {
-        //
-        // }
-        //
-        // Location location =
-        // mLocationManager.getLastKnownLocation(mProviderName);
-        // updateWithNewLocation(location);
+        if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            mProviderName = LocationManager.NETWORK_PROVIDER;
+        } else if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            mProviderName = LocationManager.GPS_PROVIDER;
+        } else {
+            Toast.makeText(this, "GPS is not enabled.", Toast.LENGTH_SHORT).show();
+            return;
 
-        Criteria crit = new Criteria();
-        crit.setAccuracy(Criteria.ACCURACY_FINE);
-        mProviderName = mLocationManager.getBestProvider(crit, false);
-        mLocationManager.requestLocationUpdates(mProviderName, 0, 1, mLocationListener);
+        }
 
+        Location location = mLocationManager.getLastKnownLocation(mProviderName);
+        updateWithNewLocation(location);
     }
 
     private void initViewsRes() {
@@ -426,19 +422,43 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         // Set title view.
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);
         TextView titleView = (TextView) customView.findViewById(R.id.txt_actionbar_title);
+        mSearchView = (EditText) customView.findViewById(R.id.search_view);
         String title = "";
         if (mType == TYPE_RECOMMAND) {
+            titleView.setVisibility(View.VISIBLE);
+            mSearchView.setVisibility(View.GONE);
             title = getResources().getString(R.string.title_user_new);
         } else if (mType == TYPE_POPULATE) {
+            titleView.setVisibility(View.VISIBLE);
+            mSearchView.setVisibility(View.GONE);
             title = getResources().getString(R.string.title_user_populate);
         } else if (mType == TYPE_SEARCH) {
+            title = null;
+            titleView.setVisibility(View.GONE);
+            mSearchView.setVisibility(View.VISIBLE);
+            mSearchView.setText(mKeyword);
+            mSearchView.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View arg0) {
+                    // TODO Auto-generated method stub
+                    gotoSearchActivity();
+                }
+
+            });
         } else if (mType == TYPE_NEARBY) {
+            titleView.setVisibility(View.VISIBLE);
+            mSearchView.setVisibility(View.GONE);
             title = getResources().getString(R.string.title_user_nearby);
         } else {
+            titleView.setVisibility(View.VISIBLE);
+            mSearchView.setVisibility(View.GONE);
             title = getResources().getString(R.string.title_user_info);
         }
 
-        titleView.setText(title);
+        if (title != null) {
+            titleView.setText(title);
+        }
         actionbar.setCustomView(customView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) customView.getLayoutParams();
@@ -452,16 +472,17 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
         getMenuInflater().inflate(R.menu.user_list_actonbar_menu, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.action_search);
+        // MenuItem searchItem = menu.findItem(R.id.action_search);
         // mSearchView = (SearchView) searchItem.getActionView();
-
-        if (mType == TYPE_SEARCH) {
-            searchItem.setVisible(true);
-            // mSearchView.setOnQueryTextListener(this);
-            // mSearchView.setIconifiedByDefault(false);
-        } else {
-            searchItem.setVisible(false);
-        }
+        //
+        // if (mType == TYPE_SEARCH) {
+        // searchItem.setVisible(true);
+        // // mSearchView.setOnQueryTextListener(this);
+        // mSearchView.setIconifiedByDefault(false);
+        // Util.custimizeSearchView(mSearchView);
+        // } else {
+        // searchItem.setVisible(false);
+        // }
 
         MenuItem locationItem = menu.findItem(R.id.menu_item_location);
         if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE || mType == TYPE_SEARCH) {
@@ -598,9 +619,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mUserList = DataModel.getUserListItems();
 
         DataModel.clearUserList();
-        if (mType == TYPE_NEARBY) {
-            // location();
-        } else {
+        if (mType != TYPE_NEARBY) {
             request();
         }
 
@@ -738,8 +757,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     @Override
     protected void onPause() {
         // TODO Auto-generated method stub
-        if (mLocationManager != null) {
-            mLocationManager.removeUpdates(mLocationListener);
+        if (mType == TYPE_NEARBY) {
+            if (mLocationManager != null) {
+                mLocationManager.removeUpdates(mLocationListener);
+            }
         }
         super.onPause();
     }
@@ -747,10 +768,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub
-        if (!TextUtils.isEmpty(mProviderName)) {
-            mLocationManager.requestLocationUpdates(mProviderName, 0, 0, mLocationListener);
+        if (mType == TYPE_NEARBY) {
+            if (!TextUtils.isEmpty(mProviderName)) {
+                mLocationManager.requestLocationUpdates(mProviderName, 0, 0, mLocationListener);
+            }
         }
-
         super.onResume();
     }
 
@@ -867,6 +889,18 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         msg.arg1 = status;
         msg.arg2 = dataType;
         msg.sendToTarget();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        // TODO Auto-generated method stub
+        mKeyword = intent.getStringExtra(Const.EXTRA_KEYWORD);
+        mSearchView.setText(mKeyword);
+        DataModel.clearUserList();
+        if (mType != TYPE_NEARBY) {
+            request();
+        }
+        super.onNewIntent(intent);
     }
 
     @Override
