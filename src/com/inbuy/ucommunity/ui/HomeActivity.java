@@ -220,12 +220,14 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         }
 
         if (!Util.isNetworkEnabled(this)) {
-            Toast.makeText(this, "Network disabled, please check.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!Util.isGPSEnabled(this)) {
-            Toast.makeText(this, "GPS disabled, please check.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getString(R.string.error_gps), Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
 
@@ -240,6 +242,13 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         if (mCurrentCity == null) {
             return;
         }
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent();
         intent.setClass(this, BigCategoryActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
@@ -250,6 +259,13 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         if (mCurrentCity == null) {
             return;
         }
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent();
         intent.setClass(this, UserListActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
@@ -261,6 +277,13 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         if (mCurrentCity == null) {
             return;
         }
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent();
         intent.setClass(this, UserListActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
@@ -272,6 +295,13 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         if (mCurrentCity == null) {
             return;
         }
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent();
         intent.setClass(this, SearchActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());

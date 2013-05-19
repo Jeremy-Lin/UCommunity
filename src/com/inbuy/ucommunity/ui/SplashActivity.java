@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
+import com.inbuy.ucommunity.util.Util;
 
 public class SplashActivity extends Activity implements DataUpdateListener {
     private static final String TAG = "SplashActivity";
@@ -24,6 +26,13 @@ public class SplashActivity extends Activity implements DataUpdateListener {
         this.setContentView(R.layout.activity_splash);
         DataUpdater.registerDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_CITIES, this);
         DataUpdater.init();
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_CITIES, null);
     }
 
