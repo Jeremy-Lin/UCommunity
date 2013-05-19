@@ -414,7 +414,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         ActionBar actionbar = this.getActionBar();
         actionbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
         actionbar.setHomeButtonEnabled(true);
-        actionbar.setIcon(R.drawable.ic_actionbar_back_normal);
+        actionbar.setIcon(R.drawable.actionbar_back_selector);
         int flag = actionbar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE;
         actionbar.setDisplayOptions(flag);
         actionbar.setDisplayShowCustomEnabled(true);
