@@ -38,6 +38,7 @@ public class NetUtil {
     public static final String ACTION_GET_BIGCATE = "getBigCate";
     public static final String ACTION_GET_SMALLCATE = "getSmaCate";
     public static final String ACTION_SEARCH_USER = "searchUser";
+    public static final String ACTION_GPS_USER = "gpsUser";
     public static final String ACTION_GET_PERSON = "getPerson";
     public static final String ACTION_GET_CATENAME = "getCateName";
     public static final String ACTION_GET_AREANAME = "getAreaName";
@@ -111,6 +112,34 @@ public class NetUtil {
         Log.d(TAG, "getPersonUrl: url = " + url);
 
         return url;
+    }
+
+    public static String getGpsUserListUrl(HashMap<String, String> ids) {
+        StringBuffer sb = new StringBuffer(URL_API_SERVER);
+        sb.append(ACTION_GPS_USER).append(DELIMITER).append(PARAM_NAME_APPKEY).append(DELIMITER)
+                .append(APP_KEY).append(DELIMITER).append(PARAM_NAME_APPSECRET).append(DELIMITER)
+                .append(APP_SECRET);
+
+        if (ids == null) {
+            return sb.toString();
+        }
+
+        String lng = ids.get(PARAM_NAME_LNG);
+        if (lng != null && !lng.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_LNG).append(DELIMITER).append(lng);
+        }
+
+        String lat = ids.get(PARAM_NAME_LAT);
+        if (lat != null && !lat.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_LAT).append(DELIMITER).append(lat);
+        }
+
+        String range = ids.get(PARAM_NAME_LONG);
+        if (range != null && !range.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_LONG).append(DELIMITER).append(range);
+        }
+
+        return sb.toString();
     }
 
     public static String getUsersListUrl(HashMap<String, String> ids) {

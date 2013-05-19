@@ -190,8 +190,16 @@ public class DataUpdater {
                 if (arg != null && arg instanceof HashMap) {
                     HashMap parm = (HashMap) arg;
 
-                    requestId = mServerConnector.httpGet(NetUtil.getUsersListUrl(parm), dataType,
-                            mServerResponseListener);
+                    String lng = (String) parm.get(NetUtil.PARAM_NAME_LNG);
+                    String url;
+
+                    if (lng != null && !lng.isEmpty()) {
+                        url = NetUtil.getGpsUserListUrl(parm);
+                    } else {
+                        url = NetUtil.getUsersListUrl(parm);
+                    }
+
+                    requestId = mServerConnector.httpGet(url, dataType, mServerResponseListener);
                 }
             }
                 break;

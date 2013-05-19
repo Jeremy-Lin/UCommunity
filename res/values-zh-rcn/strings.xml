@@ -12,11 +12,12 @@
     <string name="about">关于</string>
     <string name="hint_search">输入商户搜索</string>
     <string name="title_users_category">商户分类</string>
-    <string name="loading_more">更多...</string>
+    <string name="loading_more">更多商户</string>
     <string name="title_user_info">商户信息</string>
     <string name="title_user_list">商户列表</string>
     <string name="title_user_new">新户推荐</string>
     <string name="title_user_populate">人气商户</string>
+    <string name="title_user_nearby">附近商户</string>
     <string name="all_bus">%s全境</string>
     <string name="all_area">全部地区</string>
     <string name="all_category">全部分类</string>

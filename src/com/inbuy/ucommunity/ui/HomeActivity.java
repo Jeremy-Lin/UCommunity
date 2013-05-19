@@ -190,6 +190,7 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                         gotoBigCategoryActivity();
                         break;
                     case 1:
+                        gotoNearbyActivity();
                         break;
                     case 2:
                         gotoSearchActivity();
@@ -211,6 +212,28 @@ public class HomeActivity extends Activity implements DataUpdateListener {
             }
 
         });
+    }
+
+    private void gotoNearbyActivity() {
+        if (mCurrentCity == null) {
+            return;
+        }
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, "Network disabled, please check.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!Util.isGPSEnabled(this)) {
+            Toast.makeText(this, "GPS disabled, please check.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent();
+        intent.setClass(this, UserListActivity.class);
+        intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
+        intent.putExtra(UserListActivity.EXTRA_TYPE, UserListActivity.TYPE_NEARBY);
+        this.startActivity(intent);
     }
 
     private void gotoBigCategoryActivity() {

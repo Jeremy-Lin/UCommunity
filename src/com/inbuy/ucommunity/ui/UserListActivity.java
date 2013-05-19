@@ -6,9 +6,14 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,12 +21,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -59,6 +66,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     public static final int TYPE_POPULATE = 3;
     public static final int TYPE_SEARCH = 4;
 
+    private String[] mRanges = {
+            "0.5", "1", "2", "3", ""
+    };
+
     private int mType;
 
     private LinearLayout mSpinnerGroup;
@@ -80,6 +91,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private ListView mXzList;
     private ListView mBusList;
 
+    private RelativeLayout mRangeLayout;
+    private TextView mRangeNameView;
+    private ImageView mRangeIndicator;
+
     private RelativeLayout mAreaLayout;
     private TextView mAreaNameView;
     private ImageView mAreaIndicator;
@@ -88,9 +103,13 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private TextView mCateNameView;
     private ImageView mCateIndicator;
 
+    private RelativeLayout mRangePanel;
     private RelativeLayout mAreaPanel;
-
     private RelativeLayout mCatePanel;
+
+    private LinearLayout mRangeContainer;
+    private LinearLayout mAreaContainer;
+    private LinearLayout mCateContainer;
 
     PanelListAdapter mBigCateAdapter;
     ArrayList<PanelListItem> mBigCateNameList = new ArrayList<PanelListItem>();
@@ -102,6 +121,9 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     private ListView mBigCateListView;
     private ListView mSmallCateListView;
+
+    private ImageButton[] mNodeBtns;
+    private TextView[] mNodeNameText;
 
     ArrayList<User> mUserList;
     UserListAdapter mUserListAdapter;
@@ -133,6 +155,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     private boolean mLoading = false;
 
+    private Animation mAnimRangePanelShow = null;
+    private Animation mAnimRangePanelHide = null;
+
+    private boolean mRangePanelAnimating;
+
     private Animation mAnimAreaPanelShow = null;
     private Animation mAnimAreaPanelHide = null;
 
@@ -142,6 +169,13 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private Animation mAnimCatePanelHide = null;
 
     private boolean mCatePanelAnimating;
+
+    private double mGpsLng = -1;
+    private double mGpsLat = -1;
+    private String mGpsRange;
+
+    private LocationManager mLocationManager;
+    private String mProviderName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,6 +207,41 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         setupActionBar();
         setupSpinnerGroup();
         setupListView();
+
+        if (mType == TYPE_NEARBY) {
+            mRangeLayout.setVisibility(View.VISIBLE);
+            mAreaLayout.setVisibility(View.GONE);
+        } else {
+            mRangeLayout.setVisibility(View.GONE);
+            mAreaLayout.setVisibility(View.VISIBLE);
+        }
+
+        initLocation();
+    }
+
+    private void initLocation() {
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // if
+        // (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        // {
+        // mProviderName = LocationManager.NETWORK_PROVIDER;
+        // } else if
+        // (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        // mProviderName = LocationManager.GPS_PROVIDER;
+        // } else {
+        //
+        // }
+        //
+        // Location location =
+        // mLocationManager.getLastKnownLocation(mProviderName);
+        // updateWithNewLocation(location);
+
+        Criteria crit = new Criteria();
+        crit.setAccuracy(Criteria.ACCURACY_FINE);
+        mProviderName = mLocationManager.getBestProvider(crit, false);
+        mLocationManager.requestLocationUpdates(mProviderName, 0, 1, mLocationListener);
+
     }
 
     private void initViewsRes() {
@@ -181,15 +250,49 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
 
-        initSpinnerPanelRes();
+        initFilterPanelRes();
     }
 
-    private void initSpinnerPanelRes() {
+    private void initFilterPanelRes() {
+        // init range layout.
+        mRangeLayout = (RelativeLayout) this.findViewById(R.id.layout_range);
+        mRangeNameView = (TextView) this.findViewById(R.id.txt_range_name);
+        mRangeIndicator = (ImageView) this.findViewById(R.id.img_range_indicator);
+        mRangePanel = (RelativeLayout) this.findViewById(R.id.panel_range);
+
+        mRangeContainer = (LinearLayout) this.findViewById(R.id.panel_range_container);
+
+        initRangeNodeBtn();
+
+        mRangeLayout.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                if (mCatePanel.isShown()) {
+                    mCatePanel.setVisibility(View.INVISIBLE);
+                }
+
+                if (mAreaPanel.isShown()) {
+                    mAreaPanel.setVisibility(View.INVISIBLE);
+                }
+
+                if (mRangePanel.isShown()) {
+                    hideRangePanel();
+                } else {
+                    showRangePanel();
+                }
+            }
+
+        });
+
         // init area layout.
         mAreaLayout = (RelativeLayout) this.findViewById(R.id.layout_area);
         mAreaNameView = (TextView) this.findViewById(R.id.txt_area_name);
         mAreaIndicator = (ImageView) this.findViewById(R.id.img_area_indicator);
         mAreaPanel = (RelativeLayout) this.findViewById(R.id.panel_area);
+
+        mAreaContainer = (LinearLayout) this.findViewById(R.id.panel_area_container);
 
         mXzList = (ListView) this.findViewById(R.id.list_xz);
         mBusList = (ListView) this.findViewById(R.id.list_bus);
@@ -201,6 +304,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                 // TODO Auto-generated method stub
                 if (mCatePanel.isShown()) {
                     mCatePanel.setVisibility(View.INVISIBLE);
+                }
+
+                if (mRangePanel.isShown()) {
+                    mRangePanel.setVisibility(View.INVISIBLE);
                 }
 
                 if (mAreaPanel.isShown()) {
@@ -218,6 +325,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mCateIndicator = (ImageView) this.findViewById(R.id.img_cate_indicator);
         mCatePanel = (RelativeLayout) this.findViewById(R.id.panel_category);
 
+        mCateContainer = (LinearLayout) this.findViewById(R.id.panel_category_container);
+
         mBigCateListView = (ListView) this.findViewById(R.id.list_big_cate);
         mSmallCateListView = (ListView) this.findViewById(R.id.list_small_cate);
 
@@ -229,6 +338,9 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                 if (mAreaPanel.isShown()) {
                     mAreaPanel.setVisibility(View.INVISIBLE);
                 }
+                if (mRangePanel.isShown()) {
+                    mRangePanel.setVisibility(View.INVISIBLE);
+                }
                 if (mCatePanel.isShown()) {
                     hideCatePanel();
                 } else {
@@ -237,6 +349,68 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             }
 
         });
+    }
+
+    private void initRangeNodeBtn() {
+        LinearLayout nodesContainer = (LinearLayout) this.findViewById(R.id.rlt_range_nodes);
+        int count = nodesContainer.getChildCount();
+        mNodeBtns = new ImageButton[count];
+        mNodeNameText = new TextView[count];
+        for (int i = 0; i < count; i++) {
+            ViewGroup v = (ViewGroup) nodesContainer.getChildAt(i);
+            mNodeBtns[i] = (ImageButton) v.getChildAt(0);
+            mNodeNameText[i] = (TextView) v.getChildAt(1);
+            mNodeBtns[i].setOnClickListener(mNodesClickListener);
+        }
+
+        onResponseNodesClick(0);
+    }
+
+    private OnClickListener mNodesClickListener = new OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            int index = getNodeBtnIndex(v.getId());
+
+            if (index != -1) {
+                onResponseNodesClick(index);
+                hideRangePanel();
+
+                mLimitIndex = 0;
+                DataModel.clearUserList();
+                request();
+            }
+        }
+    };
+
+    private void onResponseNodesClick(int index) {
+        if (index == -1) {
+            return;
+        }
+        for (int i = 0; i <= index; i++) {
+            mNodeBtns[i].setImageResource(R.drawable.btn_range_pressed);
+        }
+
+        for (int j = index + 1; j < mNodeBtns.length; j++) {
+            mNodeBtns[j].setImageResource(R.drawable.btn_range_normal);
+        }
+
+        mRangeNameView.setText(mNodeNameText[index].getText());
+
+        mGpsRange = mRanges[index];
+    }
+
+    private int getNodeBtnIndex(int btnId) {
+        int index = -1;
+
+        for (int i = 0; i < mNodeBtns.length; i++) {
+            if (btnId == mNodeBtns[i].getId()) {
+                index = i;
+                break;
+            }
+        }
+
+        return index;
     }
 
     @SuppressLint("NewApi")
@@ -258,6 +432,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         } else if (mType == TYPE_POPULATE) {
             title = getResources().getString(R.string.title_user_populate);
         } else if (mType == TYPE_SEARCH) {
+        } else if (mType == TYPE_NEARBY) {
+            title = getResources().getString(R.string.title_user_nearby);
         } else {
             title = getResources().getString(R.string.title_user_info);
         }
@@ -313,6 +489,25 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         }
     }
 
+    // private void location() {
+    // mHanlder.removeCallbacks(mLocationRunnable);
+    // mHanlder.postDelayed(mLocationRunnable, 300);
+    // }
+    //
+    // private Runnable mLocationRunnable = new Runnable() {
+    //
+    // @Override
+    // public void run() {
+    // Location location = getLocation(UserListActivity.this);
+    // if (location == null) {
+    // requestLocation();
+    // } else {
+    // getLngAndLat(location);
+    // }
+    //
+    // }
+    // };
+
     private void request() {
         mHanlder.removeCallbacks(mUsersRequestRunnable);
         mHanlder.postDelayed(mUsersRequestRunnable, 300);
@@ -322,9 +517,40 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
         @Override
         public void run() {
-            requestUserList();
+            if (mType == TYPE_NEARBY) {
+                requestNearbyUserList();
+            } else {
+                requestUserList();
+            }
         }
     };
+
+    private void requestNearbyUserList() {
+        if (mLoading || mType != TYPE_NEARBY) {
+            return;
+        }
+
+        HashMap<String, String> arg = new HashMap<String, String>();
+
+        if (mGpsLng >= 0) {
+            arg.put(NetUtil.PARAM_NAME_LNG, String.valueOf(mGpsLng));
+        }
+
+        if (mGpsLat >= 0) {
+            arg.put(NetUtil.PARAM_NAME_LAT, String.valueOf(mGpsLat));
+        }
+
+        if (mGpsRange != null && !mGpsRange.isEmpty()) {
+            arg.put(NetUtil.PARAM_NAME_LONG, mGpsRange);
+        }
+
+        if (mLimitIndex != -1) {
+            arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
+            arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
+        }
+
+        DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USERS, arg);
+    }
 
     private void requestUserList() {
         if (mLoading) {
@@ -372,7 +598,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mUserList = DataModel.getUserListItems();
 
         DataModel.clearUserList();
-        request();
+        if (mType == TYPE_NEARBY) {
+            // location();
+        } else {
+            request();
+        }
 
         View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                 .inflate(R.layout.user_list_footer, null, false);
@@ -405,6 +635,64 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         }
 
     };
+
+    private void updateWithNewLocation(Location location) {
+        Log.d(TAG, "updateWithNewLocation: location = " + location);
+        if (location == null) {
+            return;
+        }
+
+        mGpsLng = location.getLongitude();
+        mGpsLat = location.getLatitude();
+        Log.d(TAG, "updateWithNewLocation: mGpsLng = " + mGpsLng + " mGpsLat = " + mGpsLat);
+        request();
+    }
+
+    private LocationListener mLocationListener = new LocationListener() {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            // TODO Auto-generated method stub
+            Log.d(TAG, "mLocationListener/onLocationChanged: location = " + location);
+            updateWithNewLocation(location);
+            mLocationManager.removeUpdates(mLocationListener);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            // TODO Auto-generated method stub
+            Log.d(TAG, "mLocationListener/onProviderDisabled: provider = " + provider);
+            updateWithNewLocation(null);
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            // TODO Auto-generated method stub
+            Log.d(TAG, "mLocationListener/onProviderEnabled: provider = " + provider);
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            // TODO Auto-generated method stub
+            Log.d(TAG, "mLocationListener/onStatusChanged: provider = " + provider);
+
+        }
+
+    };
+
+    public Location getLocation(Context context) {
+        LocationManager locMan = (LocationManager) context
+                .getSystemService(Context.LOCATION_SERVICE);
+        Location location = locMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        // if (location == null) {
+        // location =
+        // locMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        // }
+
+        return location;
+    }
 
     private void gotoUserIntroduceScreen(int position) {
         Intent intent = new Intent();
@@ -450,12 +738,19 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     @Override
     protected void onPause() {
         // TODO Auto-generated method stub
+        if (mLocationManager != null) {
+            mLocationManager.removeUpdates(mLocationListener);
+        }
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub
+        if (!TextUtils.isEmpty(mProviderName)) {
+            mLocationManager.requestLocationUpdates(mProviderName, 0, 0, mLocationListener);
+        }
+
         super.onResume();
     }
 
@@ -725,92 +1020,114 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         }
     }
 
-    private void initAnimation() {
+    private AnimationListener mAnimationListener = new AnimationListener() {
+        @Override
+        public void onAnimationEnd(Animation ani) {
+            if (ani.equals(mAnimAreaPanelShow)) {
+                mAreaPanel.setVisibility(View.VISIBLE);
+                mAreaPanelAnimating = false;
+            } else if (ani.equals(mAnimCatePanelShow)) {
+                mCatePanel.setVisibility(View.VISIBLE);
+                mCatePanelAnimating = false;
+            } else if (ani.equals(mAnimRangePanelShow)) {
+                mRangePanel.setVisibility(View.VISIBLE);
+                mRangePanelAnimating = false;
+            } else if (ani.equals(mAnimAreaPanelHide)) {
+                mAreaPanel.setVisibility(View.INVISIBLE);
+                mAreaPanelAnimating = false;
+            } else if (ani.equals(mAnimCatePanelHide)) {
+                mCatePanel.setVisibility(View.INVISIBLE);
+                mCatePanelAnimating = false;
+            } else if (ani.equals(mAnimRangePanelHide)) {
+                mRangePanel.setVisibility(View.INVISIBLE);
+                mRangePanelAnimating = false;
+            }
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation arg0) {
+
+        }
+
+        @Override
+        public void onAnimationStart(Animation arg0) {
+        }
+    };
+
+    private void initAreaAnimation() {
         if (mAnimAreaPanelShow == null) {
             mAnimAreaPanelShow = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topin);
 
-            mAnimAreaPanelShow.setAnimationListener(new AnimationListener() {
-                @Override
-                public void onAnimationEnd(Animation arg0) {
-                    mAreaPanel.setVisibility(View.VISIBLE);
-                    mAreaPanelAnimating = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation arg0) {
-
-                }
-
-                @Override
-                public void onAnimationStart(Animation arg0) {
-                }
-            });
+            mAnimAreaPanelShow.setAnimationListener(mAnimationListener);
         }
 
         if (mAnimAreaPanelHide == null) {
             mAnimAreaPanelHide = AnimationUtils
                     .loadAnimation(this, R.anim.dropdown_activity_topout);
 
-            mAnimAreaPanelHide.setAnimationListener(new AnimationListener() {
-                @Override
-                public void onAnimationEnd(Animation arg0) {
-                    mAreaPanel.setVisibility(View.INVISIBLE);
-                    mAreaPanelAnimating = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation arg0) {
-
-                }
-
-                @Override
-                public void onAnimationStart(Animation arg0) {
-                }
-            });
+            mAnimAreaPanelHide.setAnimationListener(mAnimationListener);
         }
+    }
 
+    private void initCateAnimation() {
         if (mAnimCatePanelShow == null) {
             mAnimCatePanelShow = AnimationUtils.loadAnimation(this, R.anim.dropdown_activity_topin);
 
-            mAnimCatePanelShow.setAnimationListener(new AnimationListener() {
-                @Override
-                public void onAnimationEnd(Animation arg0) {
-                    mCatePanel.setVisibility(View.VISIBLE);
-                    mCatePanelAnimating = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation arg0) {
-
-                }
-
-                @Override
-                public void onAnimationStart(Animation arg0) {
-                }
-            });
+            mAnimCatePanelShow.setAnimationListener(mAnimationListener);
         }
 
         if (mAnimCatePanelHide == null) {
             mAnimCatePanelHide = AnimationUtils
                     .loadAnimation(this, R.anim.dropdown_activity_topout);
 
-            mAnimCatePanelHide.setAnimationListener(new AnimationListener() {
-                @Override
-                public void onAnimationEnd(Animation arg0) {
-                    mCatePanel.setVisibility(View.INVISIBLE);
-                    mCatePanelAnimating = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation arg0) {
-
-                }
-
-                @Override
-                public void onAnimationStart(Animation arg0) {
-                }
-            });
+            mAnimCatePanelHide.setAnimationListener(mAnimationListener);
         }
+    }
+
+    private void initRangeAnimation() {
+        if (mAnimRangePanelShow == null) {
+            mAnimRangePanelShow = AnimationUtils
+                    .loadAnimation(this, R.anim.dropdown_activity_topin);
+
+            mAnimRangePanelShow.setAnimationListener(mAnimationListener);
+        }
+
+        if (mAnimRangePanelHide == null) {
+            mAnimRangePanelHide = AnimationUtils.loadAnimation(this,
+                    R.anim.dropdown_activity_topout);
+
+            mAnimRangePanelHide.setAnimationListener(mAnimationListener);
+        }
+    }
+
+    private void initAnimation() {
+        initRangeAnimation();
+        initAreaAnimation();
+        initCateAnimation();
+    }
+
+    private void showRangePanel() {
+        mRangeIndicator.setImageResource(R.drawable.ic_arrow_up);
+
+        if (mRangePanelAnimating) {
+            return;
+        }
+
+        mRangePanel.clearAnimation();
+        mRangePanel.startAnimation(mAnimRangePanelShow);
+        mRangePanel.postInvalidate();
+    }
+
+    private void hideRangePanel() {
+        mRangeIndicator.setImageResource(R.drawable.ic_arrow_down);
+
+        if (mRangePanelAnimating) {
+            return;
+        }
+
+        mRangePanel.clearAnimation();
+        mRangePanel.startAnimation(mAnimRangePanelHide);
+        mRangePanel.postInvalidate();
     }
 
     private void showAreaPanel() {

@@ -10,7 +10,10 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.inbuy.ucommunity.R;
@@ -332,4 +335,63 @@ public class Util {
         return bitmap;
     }
 
+    /**
+     * 判断GPS是否开启
+     * 
+     * @return
+     */
+    public static boolean isGPSEnabled(Context context) {
+        LocationManager loctionManager;
+        String contextService = Context.LOCATION_SERVICE;
+        // 通过系统服务，取得LocationManager对象
+        loctionManager = (LocationManager) context.getSystemService(contextService);
+        if (loctionManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || loctionManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            Log.i(TAG, "isGPSEnabled");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 判断Network是否开启(包括移动网络和wifi)
+     * 
+     * @return
+     */
+    public static boolean isNetworkEnabled(Context context) {
+        return (isWIFIEnabled(context) || isTelephonyEnabled(context));
+    }
+
+    /**
+     * 判断移动网络是否开启
+     * 
+     * @return
+     */
+    public static boolean isTelephonyEnabled(Context context) {
+        boolean enable = false;
+        TelephonyManager telephonyManager = (TelephonyManager) context
+                .getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager != null) {
+            if (telephonyManager.getNetworkType() != TelephonyManager.NETWORK_TYPE_UNKNOWN) {
+                enable = true;
+                Log.i(TAG, "isTelephonyEnabled");
+            }
+        }
+
+        return enable;
+    }
+
+    /**
+     * 判断wifi是否开启
+     */
+    public static boolean isWIFIEnabled(Context context) {
+        boolean enable = false;
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            enable = true;
+            Log.i(TAG, "isWIFIEnabled");
+        }
+        return enable;
+    }
 }
