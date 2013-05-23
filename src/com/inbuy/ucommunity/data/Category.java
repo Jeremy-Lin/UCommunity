@@ -1,13 +1,13 @@
+
 package com.inbuy.ucommunity.data;
 
-import android.graphics.drawable.Drawable;
 
 public class Category {
-	public Drawable mLogo;
-	public String mName; 
-	
-	public Category(Drawable logo, String name) {
-		this.mLogo = logo;
-		this.mName = name;
-	}
+    public int mLogoResId;
+    public String mName;
+
+    public Category(int logoRes, String name) {
+        this.mLogoResId = logoRes;
+        this.mName = name;
+    }
 }

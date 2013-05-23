@@ -50,9 +50,12 @@
             android:id="@+id/grid_categories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="100dp"
             android:background="@drawable/home_grid_bg"
+            android:drawSelectorOnTop="false"
             android:gravity="center"
             android:horizontalSpacing="5dp"
+            android:listSelector="@drawable/grid_item_selector"
             android:numColumns="3"
             android:verticalSpacing="30dp" />
     </LinearLayout>

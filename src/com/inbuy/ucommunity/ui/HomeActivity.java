@@ -5,7 +5,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -315,19 +314,18 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                 R.string.recommand_merchant, R.string.popular_merchant, R.string.about
         };
         int[] logoIds = {
-                R.drawable.ic_all_user, R.drawable.ic_nearby_user, R.drawable.ic_search_user,
-                R.drawable.ic_recommand_user, R.drawable.ic_popu_user, R.drawable.ic_about,
+                R.drawable.ic_all_user_selector, R.drawable.ic_nearby_user_selector,
+                R.drawable.ic_search_user_selector, R.drawable.ic_recommand_user_selector,
+                R.drawable.ic_popu_user_selector, R.drawable.ic_about_selector,
         };
 
         Resources res = this.getResources();
 
         Category category = null;
         String name = null;
-        Drawable logo = null;
         for (int i = 0; i < nameIds.length; i++) {
             name = res.getString(nameIds[i]);
-            logo = res.getDrawable(logoIds[i]);
-            category = new Category(logo, name);
+            category = new Category(logoIds[i], name);
             categories.add(category);
         }
 
