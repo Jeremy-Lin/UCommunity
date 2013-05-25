@@ -372,13 +372,26 @@ public class BigCategoryActivity extends Activity implements DataUpdateListener 
         super.onPause();
     }
 
+    private void onBack() {
+        if (mAreaPanel.isShown()) {
+            hideAreaPanel();
+        } else {
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        onBack();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         Log.d(TAG, "onOptionsItemSelected: id = " + id);
         switch (id) {
             case android.R.id.home:
-                finish();
+                onBack();
                 break;
             default:
                 break;

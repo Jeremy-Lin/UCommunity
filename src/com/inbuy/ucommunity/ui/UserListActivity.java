@@ -67,7 +67,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     public static final int TYPE_SEARCH = 4;
 
     private String[] mRanges = {
-            "0.5", "1", "2", "3", ""
+            "0.5", "1", "2", "3", "10"
     };
 
     private int mType;
@@ -76,7 +76,12 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     private ListView mUserListView;
 
+    private TextView mLoadingMoreView;
+    private ProgressBar mLoadingMoreBar;
+
     private ProgressBar mLoadingBar;
+
+    private boolean mIsLoadingMore;
 
     PanelListAdapter mXzAreaAdapter;
     ArrayList<PanelListItem> mXzAreaNameList = new ArrayList<PanelListItem>();
@@ -256,6 +261,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mRangeIndicator = (ImageView) this.findViewById(R.id.img_range_indicator);
         mRangePanel = (RelativeLayout) this.findViewById(R.id.panel_range);
 
+        mRangePanel.setOnClickListener(null);
+
         mRangeContainer = (LinearLayout) this.findViewById(R.id.panel_range_container);
 
         initRangeNodeBtn();
@@ -287,6 +294,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mAreaNameView = (TextView) this.findViewById(R.id.txt_area_name);
         mAreaIndicator = (ImageView) this.findViewById(R.id.img_area_indicator);
         mAreaPanel = (RelativeLayout) this.findViewById(R.id.panel_area);
+
+        mAreaPanel.setOnClickListener(null);
 
         mAreaContainer = (LinearLayout) this.findViewById(R.id.panel_area_container);
 
@@ -320,6 +329,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mCateNameView = (TextView) this.findViewById(R.id.txt_cate_name);
         mCateIndicator = (ImageView) this.findViewById(R.id.img_cate_indicator);
         mCatePanel = (RelativeLayout) this.findViewById(R.id.panel_category);
+
+        mCatePanel.setOnClickListener(null);
 
         mCateContainer = (LinearLayout) this.findViewById(R.id.panel_category_container);
 
@@ -623,8 +634,13 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             request();
         }
 
+        mUserListView.setEmptyView(findViewById(android.R.id.empty));
+
         View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                 .inflate(R.layout.user_list_footer, null, false);
+
+        mLoadingMoreView = (TextView) foot.findViewById(R.id.txt_loading_more);
+        mLoadingMoreBar = (ProgressBar) foot.findViewById(R.id.progressbar_loading);
 
         mUserListView.addFooterView(foot);
 
@@ -632,6 +648,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
             @Override
             public void onClick(View v) {
+                mIsLoadingMore = true;
                 request();
             }
 
@@ -720,13 +737,30 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         this.startActivity(intent);
     }
 
+    private void onBack() {
+        if (mRangePanel.isShown()) {
+            hideRangePanel();
+        } else if (mAreaPanel.isShown()) {
+            hideAreaPanel();
+        } else if (mCatePanel.isShown()) {
+            hideCatePanel();
+        } else {
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        onBack();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         Log.d(TAG, "onOptionsItemSelected: id = " + id);
         switch (id) {
             case android.R.id.home:
-                finish();
+                onBack();
                 break;
             case R.id.menu_item_location:
                 break;
@@ -785,7 +819,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             } else {
                 mBigCateNameList.clear();
             }
-            PanelListItem pli = new PanelListItem(PanelListItem.TYPE_LEFT, "全部分类", false);
+            PanelListItem pli = new PanelListItem(PanelListItem.TYPE_LEFT, getResources()
+                    .getString(R.string.all_category), false);
             mBigCateNameList.add(pli);
             for (BigCategory bigCate : mBigCateList) {
                 pli = new PanelListItem(PanelListItem.TYPE_LEFT, bigCate.mName, false);
@@ -794,9 +829,49 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         }
     }
 
+    private void filterUserBySmallCateId(String smallCateId) {
+        ArrayList<User> userList = DataModel.getUserListItems();
+        if (userList == null) {
+            return;
+        }
+
+        mUserList = new ArrayList<User>();
+        for (User user : userList) {
+            if (user.mSmallCateId.equals(smallCateId)) {
+                mUserList.add(user);
+            }
+        }
+    }
+
+    private void filterUserByBigCateId(String bigCateId) {
+        ArrayList<User> userList = DataModel.getUserListItems();
+        if (userList == null) {
+            return;
+        }
+
+        mUserList = new ArrayList<User>();
+        for (User user : userList) {
+            if (user.mBigCateId.equals(bigCateId)) {
+                mUserList.add(user);
+            }
+        }
+    }
+
     private void setUserList() {
         mUserList = null;
-        mUserList = DataModel.getUserListItems();
+
+        if (mType == TYPE_NEARBY) {
+            if (mCurSmallCatePos > 0) {
+                filterUserBySmallCateId(mCurSmallCateId);
+            } else if (mCurBigCatePos > 0) {
+                filterUserByBigCateId(mCurBigCateId);
+            } else {
+                mUserList = DataModel.getUserListItems();
+            }
+
+        } else {
+            mUserList = DataModel.getUserListItems();
+        }
         mUserListAdapter.setUserList(mUserList);
     }
 
@@ -808,24 +883,42 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                     mUserListView.setVisibility(View.INVISIBLE);
                 }
                 mLoading = true;
-                mLoadingBar.setVisibility(View.VISIBLE);
+                if (mIsLoadingMore) {
+                    mLoadingMoreView.setVisibility(View.GONE);
+                    mLoadingMoreBar.setVisibility(View.VISIBLE);
+                } else {
+                    mLoadingBar.setVisibility(View.VISIBLE);
+                }
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_READY:
-                mLoadingBar.setVisibility(View.GONE);
+                if (mIsLoadingMore) {
+                    mLoadingMoreView.setVisibility(View.VISIBLE);
+                    mLoadingMoreBar.setVisibility(View.GONE);
+                } else {
+                    mLoadingBar.setVisibility(View.GONE);
+                }
                 setUserList();
 
                 if (mUserList == null || mUserList.size() == 0) {
-                    mUserListView.setVisibility(View.INVISIBLE);
+
+                    // mUserListView.setVisibility(View.INVISIBLE);
                 } else {
                     mLimitIndex += Const.USER_COUNT;
                     mUserListView.setVisibility(View.VISIBLE);
                 }
 
+                mIsLoadingMore = false;
                 mLoading = false;
                 mUserListAdapter.notifyDataSetChanged();
                 break;
             case DataUpdater.DATA_UPDATE_STATUS_ERROR:
-                mLoadingBar.setVisibility(View.GONE);
+                if (mIsLoadingMore) {
+                    mLoadingMoreView.setVisibility(View.VISIBLE);
+                    mLoadingMoreBar.setVisibility(View.GONE);
+                } else {
+                    mLoadingBar.setVisibility(View.GONE);
+                }
+                mIsLoadingMore = false;
                 mLoading = false;
                 break;
         }

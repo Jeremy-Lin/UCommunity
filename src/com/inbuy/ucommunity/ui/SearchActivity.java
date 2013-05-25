@@ -4,16 +4,19 @@ package com.inbuy.ucommunity.ui;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -21,25 +24,27 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.TextView;
 
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.util.Const;
 import com.inbuy.ucommunity.util.Util;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 public class SearchActivity extends Activity implements OnQueryTextListener {
     private static final String TAG = "SearchActivity";
-    public static final String KEY_KEYWORDS = "key_keywords";
+    public static final String KEY_KEYWORDS = "key_keywords_str";
 
     private SearchView mSearchView;
     private ListView mListView;
     private ProgressBar mLoadingBar;
 
+    ArrayAdapter<String> mAdapter;
+
     private String mCurrentCityId;
 
-    private Set<String> mKeywordsSet;
+    private String[] mKeywordsArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,41 +82,73 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
     private String[] getKeywords() {
         SharedPreferences sp = this.getSharedPreferences(Const.NAME_SHARED_PREF_UCOMM,
                 this.MODE_PRIVATE);
-        mKeywordsSet = sp.getStringSet(KEY_KEYWORDS, mKeywordsSet);
-        if (mKeywordsSet != null) {
-            String[] keywords = new String[mKeywordsSet.size()];
-            mKeywordsSet.toArray(keywords);
-            return keywords;
+
+        String keywords = sp.getString(KEY_KEYWORDS, "");
+
+        Log.d(TAG, "getKeywords keywords = " + keywords);
+
+        String[] keywordsArray = null;
+        if (keywords != null && !keywords.isEmpty()) {
+            keywordsArray = keywords.split(";");
         }
 
-        return null;
+        return keywordsArray;
     }
 
     private void setupListView() {
         mListView = (ListView) this.findViewById(R.id.list_keywords);
 
-        String[] keywords = getKeywords();
+        mKeywordsArray = getKeywords();
         mLoadingBar.setVisibility(View.GONE);
 
-        if (keywords == null) {
-            mListView.setVisibility(View.GONE);
-        } else {
+        {
             mListView.setVisibility(View.VISIBLE);
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                    android.R.layout.simple_list_item_1, keywords);
+            mListView.setEmptyView(findViewById(android.R.id.empty));
 
-            mListView.setAdapter(adapter);
+            View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                    .inflate(android.R.layout.simple_list_item_1, null, false);
+
+            TextView tv = (TextView) foot.findViewById(android.R.id.text1);
+            tv.setText(getResources().getString(R.string.clear_search_records));
+            mListView.addFooterView(foot);
+
+            foot.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    // TODO Auto-generated method stub
+                    clearKeywordsRecord();
+                    mKeywordsArray = null;
+                    mAdapter.clear();
+                    mAdapter.notifyDataSetChanged();
+                }
+
+            });
+
+            mListView.setFooterDividersEnabled(true);
+
+            ArrayList<String> keywords = new ArrayList<String>();
+            if (mKeywordsArray != null) {
+                for (int i = 0; i < mKeywordsArray.length; i++) {
+                    keywords.add(mKeywordsArray[i]);
+                }
+            }
+            mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, keywords);
+
+            mListView.setAdapter(mAdapter);
 
             mListView.setOnItemClickListener(new OnItemClickListener() {
 
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
                     // TODO Auto-generated method stub
-                    if (mKeywordsSet != null) {
-                        String[] keywords = new String[mKeywordsSet.size()];
-                        mKeywordsSet.toArray(keywords);
-                        gotoSearchResult(keywords[position]);
+                    if (position < 0 || position > mKeywordsArray.length) {
+                        return;
+                    }
+
+                    if (mKeywordsArray != null) {
+                        gotoSearchResult(mKeywordsArray[position]);
                     }
                 }
             });
@@ -184,18 +221,27 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
         return false;
     }
 
+    private void clearKeywordsRecord() {
+        SharedPreferences sp = this.getSharedPreferences(Const.NAME_SHARED_PREF_UCOMM,
+                this.MODE_PRIVATE);
+        Editor editor = sp.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     private void saveKeywords(String query) {
         // Save key words searched.
         SharedPreferences sp = this.getSharedPreferences(Const.NAME_SHARED_PREF_UCOMM,
                 this.MODE_PRIVATE);
 
-        if (mKeywordsSet == null) {
-            mKeywordsSet = new HashSet<String>();
-        }
+        String keywords = sp.getString(KEY_KEYWORDS, "");
 
-        mKeywordsSet.add(query);
+        StringBuffer sb = new StringBuffer();
+        sb.append(query).append(";").append(keywords);
+
+        Log.d(TAG, "saveKeywords keywords = " + sb.toString());
         Editor editor = sp.edit();
-        editor.putStringSet(KEY_KEYWORDS, mKeywordsSet);
+        editor.putString(KEY_KEYWORDS, sb.toString());
         editor.commit();
     }
 
@@ -214,6 +260,8 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
         if (!TextUtils.isEmpty(query)) {
             // Save key words searched.
             saveKeywords(query);
+            mAdapter.add(query);
+            mAdapter.notifyDataSetChanged();
             // Go to search result activity.
             gotoSearchResult(query);
         }

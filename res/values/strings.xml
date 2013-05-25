@@ -4,8 +4,11 @@
     <string name="app_name">UCommunity</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="loading_more">Loading more...</string>
+    <string name="loading_more">Loading more</string>
     <string name="error_network">Network disabled, please check.</string>
     <string name="error_gps">Network disabled, please check.</string>
+    <string name="empty_userlist">No users</string>
+    <string name="empty_records">No records</string>
+    <string name="clear_search_records">Clear records</string>
 
 </resources>

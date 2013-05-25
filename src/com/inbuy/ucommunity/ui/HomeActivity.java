@@ -201,8 +201,7 @@ public class HomeActivity extends Activity implements DataUpdateListener {
                         gotoPopulateActivity();
                         break;
                     case 5:
-                        break;
-                    case 6:
+                        gotoAboutActivity();
                         break;
                     default:
                         break;
@@ -304,6 +303,19 @@ public class HomeActivity extends Activity implements DataUpdateListener {
         Intent intent = new Intent();
         intent.setClass(this, SearchActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCity.getmId());
+        this.startActivity(intent);
+    }
+
+    private void gotoAboutActivity() {
+
+        if (!Util.isNetworkEnabled(this)) {
+            Toast.makeText(this, getResources().getString(R.string.error_network),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent();
+        intent.setClass(this, AboutActivity.class);
         this.startActivity(intent);
     }
 

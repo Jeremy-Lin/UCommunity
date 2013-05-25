@@ -6,6 +6,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -116,7 +117,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         mUserAddrView = (TextView) this.findViewById(R.id.txt_address);
 
         mUserPhoneView = (TextView) this.findViewById(R.id.txt_user_phone);
-        mCardPhoneView = (TextView) this.findViewById(R.id.txt_card_phone);
+        mCardPhoneView = (TextView) this.findViewById(R.id.txt_credit_hot_line);
 
         mUserNameView = (TextView) this.findViewById(R.id.txt_user_name);
         mUserInfoView = (TextView) this.findViewById(R.id.txt_user_info);
@@ -127,12 +128,14 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
 
         mAddressLayout = (LinearLayout) this.findViewById(R.id.layout_address);
-        mPhoneLayout = (LinearLayout) this.findViewById(R.id.layout_phone);
+        mPhoneLayout = (LinearLayout) this.findViewById(R.id.layout_user_phone);
+        LinearLayout cardLayout = (LinearLayout) this.findViewById(R.id.layout_credit_hot_line);
         mInfoLayout = (LinearLayout) this.findViewById(R.id.layout_user_info);
         mCardMoreLayout = (LinearLayout) this.findViewById(R.id.layout_user_price);
 
         mAddressLayout.setOnClickListener(mClickListener);
         mPhoneLayout.setOnClickListener(mClickListener);
+        cardLayout.setOnClickListener(mClickListener);
         mInfoLayout.setOnClickListener(mClickListener);
         mCardMoreLayout.setOnClickListener(mClickListener);
     }
@@ -145,16 +148,29 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
             switch (id) {
                 case R.id.layout_address:
                     break;
-                case R.id.layout_phone:
+                case R.id.layout_user_phone:
+                    makeCall(mUserPhoneView.getText().toString());
+                    break;
+                case R.id.layout_credit_hot_line:
+                    makeCall(mCardPhoneView.getText().toString());
                     break;
                 case R.id.layout_user_info:
-                    gotoUserDetailScreen();
+                    gotoUserDetailScreen(UserDetailActivity.TYPE_USER_INFO);
                     break;
                 case R.id.layout_user_price:
+                    gotoUserDetailScreen(UserDetailActivity.TYPE_USER_PRICE);
                     break;
             }
         }
     };
+
+    private void makeCall(String number) {
+        if (number == null) {
+            return;
+        }
+        Intent phone = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + number));
+        startActivity(phone);
+    }
 
     private void refresh() {
         mUser = DataModel.getUserItem();
@@ -165,9 +181,18 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
             setPhotoView();
             setStarView();
 
-            mUserAddrView.setText(Util.clearStrings(mUser.mAddress));
-            mUserPhoneView.setText(Util.clearStrings(mUser.mPhone));
-            mCardPhoneView.setText(Util.clearStrings(mUser.mCardPhone));
+            String str = Util.clearStrings(mUser.mAddress);
+            String format = getResources().getString(R.string.user_address);
+            str = String.format(format, str);
+            mUserAddrView.setText(str);
+            str = Util.clearStrings(mUser.mPhone);
+            format = getResources().getString(R.string.user_phone);
+            str = String.format(format, str);
+            mUserPhoneView.setText(str);
+            str = Util.clearStrings(mUser.mCardPhone);
+            format = getResources().getString(R.string.credit_hot_line);
+            str = String.format(format, str);
+            mCardPhoneView.setText(str);
 
             mUserNameView.setText(Util.clearStrings(mUser.mName));
             mUserInfoView.setText(Util.clearStrings(mUser.mInfo));
@@ -217,9 +242,10 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
 
     }
 
-    private void gotoUserDetailScreen() {
+    private void gotoUserDetailScreen(int type) {
         Intent intent = new Intent();
         intent.setClass(this, UserDetailActivity.class);
+        intent.putExtra(Const.EXTRA_ACTION_VIEW_TYPE, type);
         intent.putExtra(Const.EXTRA_USER_ID, mUser.mId);
         this.startActivity(intent);
     }

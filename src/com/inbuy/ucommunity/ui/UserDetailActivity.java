@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -30,6 +29,11 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
     private static final int MSG_UPDATE_LIST = 0;
     private static final int MSG_ACTION = 1;
     private static final int MSG_DATA_UPDATE = 2;
+
+    public static final int TYPE_USER_INFO = 0;
+    public static final int TYPE_USER_PRICE = 1;
+
+    private int mType;
 
     private LinearLayout mLayoutGroup;
 
@@ -58,6 +62,7 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
         initViewsRes();
 
         mUserId = this.getIntent().getStringExtra(Const.EXTRA_USER_ID);
+        mType = this.getIntent().getIntExtra(Const.EXTRA_ACTION_VIEW_TYPE, TYPE_USER_INFO);
 
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER, mUserId);
     }
@@ -99,33 +104,30 @@ public class UserDetailActivity extends Activity implements DataUpdateListener {
 
     }
 
-    private OnClickListener mClickListener = new OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            int id = v.getId();
-            switch (id) {
-                case R.id.layout_address:
-                    break;
-                case R.id.layout_phone:
-                    break;
-                case R.id.layout_user_info:
-                    break;
-                case R.id.layout_user_price:
-                    break;
-            }
-        }
-    };
-
     private void refresh() {
         mUser = DataModel.getUserItem();
         if (mUser != null) {
 
-            mUserAddrView.setText(Util.clearStrings(mUser.mAddress));
-            mUserPhoneView.setText(Util.clearStrings(mUser.mPhone));
+            String str = Util.clearStrings(mUser.mAddress);
+            String format = getResources().getString(R.string.user_address);
+            str = String.format(format, str);
+            mUserAddrView.setText(str);
+
+            str = Util.clearStrings(mUser.mPhone);
+            format = getResources().getString(R.string.label_phone);
+            str = String.format(format, str);
+            mUserPhoneView.setText(str);
 
             mUserNameView.setText(Util.clearStrings(mUser.mName));
-            mUserInfoView.setText(Util.clearStrings(mUser.mInfo));
+
+            String content = "";
+            if (mType == TYPE_USER_INFO) {
+                content = Util.clearStrings(mUser.mInfo);
+            } else {
+                content = Util.clearStrings(mUser.mFckCardMore);
+            }
+
+            mUserInfoView.setText(content);
 
         }
     }

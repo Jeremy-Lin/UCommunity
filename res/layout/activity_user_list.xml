@@ -11,7 +11,7 @@
         <LinearLayout
             android:id="@+id/group_spinners"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/head_bar_height"
             android:background="@drawable/header_bar_bg"
             android:gravity="left|center_vertical"
             android:orientation="horizontal" >
@@ -19,14 +19,15 @@
             <RelativeLayout
                 android:id="@+id/layout_range"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="@drawable/filter_panel_bg_selector"
                 android:gravity="center_vertical" >
 
                 <TextView
                     android:id="@+id/txt_range_name"
                     android:layout_width="70dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
@@ -39,6 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
                     android:src="@drawable/ic_vertical_divider" />
 
                 <ImageView
@@ -54,14 +56,15 @@
             <RelativeLayout
                 android:id="@+id/layout_area"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="@drawable/filter_panel_bg_selector"
                 android:gravity="center_vertical" >
 
                 <TextView
                     android:id="@+id/txt_area_name"
                     android:layout_width="70dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
@@ -74,6 +77,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
                     android:src="@drawable/ic_vertical_divider" />
 
                 <ImageView
@@ -89,14 +93,15 @@
             <RelativeLayout
                 android:id="@+id/layout_cate"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="@drawable/filter_panel_bg_selector"
                 android:gravity="center_vertical" >
 
                 <TextView
                     android:id="@+id/txt_cate_name"
                     android:layout_width="70dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
@@ -109,6 +114,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
                     android:src="@drawable/ic_vertical_divider" />
 
                 <ImageView
@@ -139,8 +145,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="@drawable/ic_divider"
-            android:listSelector="@null" />
+            android:listSelector="@null"
+            android:visibility="gone" />
     </LinearLayout>
+
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
+        android:text="@string/empty_userlist"
+        android:textSize="20sp"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/panel_range"
@@ -195,7 +212,8 @@
                 android:layout_height="match_parent"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="12dp"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:listSelector="@null" >
             </ListView>
 
             <ListView
@@ -206,7 +224,8 @@
                 android:layout_marginTop="12dp"
                 android:layout_weight="1"
                 android:background="#e4e3de"
-                android:divider="@null" >
+                android:divider="@null"
+                android:listSelector="@null" >
             </ListView>
         </LinearLayout>
     </RelativeLayout>
@@ -239,7 +258,8 @@
                 android:id="@+id/list_big_cate"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:listSelector="@null" >
             </ListView>
 
             <ListView
@@ -248,7 +268,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="#e4e3de"
-                android:divider="@null" >
+                android:divider="@null"
+                android:listSelector="@null" >
             </ListView>
         </LinearLayout>
     </RelativeLayout>

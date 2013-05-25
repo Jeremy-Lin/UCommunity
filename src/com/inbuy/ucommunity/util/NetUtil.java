@@ -139,6 +139,16 @@ public class NetUtil {
             sb.append(DELIMITER).append(PARAM_NAME_LONG).append(DELIMITER).append(range);
         }
 
+        String limit = ids.get(PARAM_NAME_LIMIT);
+        if (limit != null && !limit.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_LIMIT).append(DELIMITER).append(limit);
+        }
+
+        String count = ids.get(PARAM_NAME_COUNT);
+        if (count != null && !count.isEmpty()) {
+            sb.append(DELIMITER).append(PARAM_NAME_COUNT).append(DELIMITER).append(count);
+        }
+
         return sb.toString();
     }
 
