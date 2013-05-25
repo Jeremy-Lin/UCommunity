@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SearchView;
 
 import com.inbuy.ucommunity.R;
@@ -338,14 +339,14 @@ public class Util {
     }
 
     /**
-     * ÅÐ¶ÏGPSÊÇ·ñ¿ªÆô
+     * ï¿½Ð¶ï¿½GPSï¿½Ç·ï¿½ï¿½ï¿½
      * 
      * @return
      */
     public static boolean isGPSEnabled(Context context) {
         LocationManager loctionManager;
         String contextService = Context.LOCATION_SERVICE;
-        // Í¨¹ýÏµÍ³·þÎñ£¬È¡µÃLocationManager¶ÔÏó
+        // Í¨ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½LocationManagerï¿½ï¿½ï¿½ï¿½
         loctionManager = (LocationManager) context.getSystemService(contextService);
         if (loctionManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || loctionManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -357,7 +358,7 @@ public class Util {
     }
 
     /**
-     * ÅÐ¶ÏNetworkÊÇ·ñ¿ªÆô(°üÀ¨ÒÆ¶¯ÍøÂçºÍwifi)
+     * ï¿½Ð¶ï¿½Networkï¿½Ç·ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wifi)
      * 
      * @return
      */
@@ -366,7 +367,7 @@ public class Util {
     }
 
     /**
-     * ÅÐ¶ÏÒÆ¶¯ÍøÂçÊÇ·ñ¿ªÆô
+     * ï¿½Ð¶ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½
      * 
      * @return
      */
@@ -385,7 +386,7 @@ public class Util {
     }
 
     /**
-     * ÅÐ¶ÏwifiÊÇ·ñ¿ªÆô
+     * ï¿½Ð¶ï¿½wifiï¿½Ç·ï¿½ï¿½ï¿½
      */
     public static boolean isWIFIEnabled(Context context) {
         boolean enable = false;
@@ -397,7 +398,7 @@ public class Util {
         return enable;
     }
 
-    public static void custimizeSearchView(SearchView searchView) {
+    public static void custimizeSearchView(final SearchView searchView) {
         if (searchView == null) {
             return;
         }
@@ -409,10 +410,15 @@ public class Util {
         // Setting background of 'search_plate' to earlier defined drawable.
         searchPlate.setBackgroundResource(R.drawable.action_search_bar_bg);
 
-        // int searchMagId = searchView.getContext().getResources()
-        // .getIdentifier("android:id/search_mag_icon", null, null);
-        // View searchMag = searchView.findViewById(searchMagId);
-        // searchMag.setVisibility(View.GONE);
+        int searchMagId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_mag_icon", null, null);
+        ImageView searchMag = (ImageView) searchView.findViewById(searchMagId);
+        searchMag.setImageResource(R.drawable.transparent_background);
 
+        int closeBtnId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_close_btn", null, null);
+
+        View closeBtn = searchView.findViewById(closeBtnId);
+        closeBtn.setBackgroundResource(R.drawable.transparent_background);
     }
 }

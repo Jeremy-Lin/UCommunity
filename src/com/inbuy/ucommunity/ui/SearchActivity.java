@@ -4,6 +4,7 @@ package com.inbuy.ucommunity.ui;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -164,6 +165,8 @@ public class SearchActivity extends Activity implements OnQueryTextListener {
         mSearchView.setIconifiedByDefault(false);
         mSearchView.requestFocus();
 
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         Util.custimizeSearchView(mSearchView);
 
         return true;

@@ -28,5 +28,6 @@
     <string name="label_phone">电话: %s</string>
     <string name="empty_records">没有搜索记录</string>
     <string name="clear_search_records">清除搜索记录</string>
+    <string name="search_hint">商户，地区等...</string>
 
 </resources>

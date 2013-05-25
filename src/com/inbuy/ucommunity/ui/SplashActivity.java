@@ -52,7 +52,7 @@ public class SplashActivity extends Activity implements DataUpdateListener {
                     SplashActivity.this.finish();
                 }
 
-            }, 100);
+            }, 500);
 
         }
     }

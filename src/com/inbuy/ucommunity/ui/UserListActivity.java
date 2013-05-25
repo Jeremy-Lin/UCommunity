@@ -989,6 +989,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         // TODO Auto-generated method stub
         mKeyword = intent.getStringExtra(Const.EXTRA_KEYWORD);
         mSearchView.setText(mKeyword);
+        mLimitIndex = 0;
         DataModel.clearUserList();
         if (mType != TYPE_NEARBY) {
             request();
