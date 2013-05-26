@@ -576,10 +576,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             arg.put(NetUtil.PARAM_NAME_LONG, mGpsRange);
         }
 
-        if (mLimitIndex != -1) {
-            arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
-            arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
-        }
+        // if (mLimitIndex != -1) {
+        // arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
+        // arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
+        // }
 
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USERS, arg);
     }
@@ -636,24 +636,25 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
         mUserListView.setEmptyView(findViewById(android.R.id.empty));
 
-        View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                .inflate(R.layout.user_list_footer, null, false);
+        if (mType != TYPE_NEARBY) {
+            View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                    .inflate(R.layout.user_list_footer, null, false);
 
-        mLoadingMoreView = (TextView) foot.findViewById(R.id.txt_loading_more);
-        mLoadingMoreBar = (ProgressBar) foot.findViewById(R.id.progressbar_loading);
+            mLoadingMoreView = (TextView) foot.findViewById(R.id.txt_loading_more);
+            mLoadingMoreBar = (ProgressBar) foot.findViewById(R.id.progressbar_loading);
 
-        mUserListView.addFooterView(foot);
+            mUserListView.addFooterView(foot);
 
-        foot.setOnClickListener(new OnClickListener() {
+            foot.setOnClickListener(new OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                mIsLoadingMore = true;
-                request();
-            }
+                @Override
+                public void onClick(View v) {
+                    mIsLoadingMore = true;
+                    request();
+                }
 
-        });
-
+            });
+        }
         mUserListAdapter = new UserListAdapter(this, mUserList, mHanlder);
         mUserListView.setAdapter(mUserListAdapter);
         mUserListView.setOnItemClickListener(mUserItemClickListener);
