@@ -67,7 +67,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     public static final int TYPE_SEARCH = 4;
 
     private String[] mRanges = {
-            "0.5", "1", "2", "3", "10"
+            "0.5", "1", "2", "3", "5"
     };
 
     private int mType;

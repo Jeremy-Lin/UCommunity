@@ -4,5 +4,7 @@
     <drawable name="translucent_background">#4f000000</drawable>
     <drawable name="transparent_background">#00000000</drawable>
     <drawable name="filter_panel_bg_pressed">#747473</drawable>
+    <drawable name="user_info_item_pressed">#fd9b2b</drawable>
+    <drawable name="user_info_item_normal">#00ffffff</drawable>
 
 </resources>

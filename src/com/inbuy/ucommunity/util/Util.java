@@ -276,6 +276,8 @@ public class Util {
         if (strs != null) {
             strs = strs.replace("&nbsp;", "");
             strs = strs.replace("\n\r", "");
+            strs = strs.replace("&rdquo;", "");
+            strs = strs.replace("&ldquo;", "");
         }
 
         return strs;

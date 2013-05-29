@@ -10,5 +10,10 @@
     <string name="empty_userlist">No users</string>
     <string name="empty_records">No records</string>
     <string name="clear_search_records">Clear records</string>
+    <string name="range_0">500m</string>
+    <string name="range_1">1km</string>
+    <string name="range_2">2km</string>
+    <string name="range_3">3km</string>
+    <string name="range_4">5km</string>
 
 </resources>

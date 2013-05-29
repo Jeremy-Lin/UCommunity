@@ -107,7 +107,8 @@
                 android:id="@+id/list_xz"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:listSelector="@null" >
             </ListView>
 
             <ListView
@@ -116,7 +117,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="#e4e3de"
-                android:divider="@null" >
+                android:divider="@null"
+                android:listSelector="@null" >
             </ListView>
         </LinearLayout>
     </RelativeLayout>
