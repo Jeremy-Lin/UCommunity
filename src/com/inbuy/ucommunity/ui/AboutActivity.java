@@ -44,7 +44,7 @@ public class AboutActivity extends Activity {
 
         View customView = this.getLayoutInflater().inflate(R.layout.actionbar_title_view, null);
         TextView titleView = (TextView) customView.findViewById(R.id.txt_actionbar_title);
-        titleView.setText(R.string.title_users_category);
+        titleView.setText(R.string.about_title);
         actionbar.setCustomView(customView, new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT));
         ActionBar.LayoutParams lp = (ActionBar.LayoutParams) customView.getLayoutParams();

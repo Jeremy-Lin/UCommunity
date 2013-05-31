@@ -274,6 +274,30 @@
         </LinearLayout>
     </RelativeLayout>
 
+    <LinearLayout
+        android:id="@+id/layout_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#33000000"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/txt_lng_lat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:id="@+id/txt_location_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"

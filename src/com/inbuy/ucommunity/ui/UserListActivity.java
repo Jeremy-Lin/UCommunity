@@ -182,6 +182,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private LocationManager mLocationManager;
     private String mProviderName;
 
+    private LinearLayout mLocationPanel;
+    private TextView mLngLatView;
+    private TextView mLocationNameView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -252,6 +256,16 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mLoadingBar = (ProgressBar) this.findViewById(R.id.loading);
 
         initFilterPanelRes();
+
+        mLocationPanel = (LinearLayout) this.findViewById(R.id.layout_location);
+        mLngLatView = (TextView) this.findViewById(R.id.txt_lng_lat);
+        mLocationNameView = (TextView) this.findViewById(R.id.txt_location_name);
+
+        if (mType == TYPE_NEARBY) {
+            mLocationPanel.setVisibility(View.VISIBLE);
+        } else {
+            mLocationPanel.setVisibility(View.GONE);
+        }
     }
 
     private void initFilterPanelRes() {
@@ -682,6 +696,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         mGpsLng = location.getLongitude();
         mGpsLat = location.getLatitude();
         Log.d(TAG, "updateWithNewLocation: mGpsLng = " + mGpsLng + " mGpsLat = " + mGpsLat);
+
+        StringBuffer sb = new StringBuffer();
+        sb.append(mGpsLng).append(", ").append(mGpsLat);
+        mLngLatView.setText(sb.toString());
+
         request();
     }
 
