@@ -7,12 +7,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,8 +34,13 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.BMapManager;
+import com.baidu.mapapi.map.LocationData;
 import com.inbuy.ucommunity.R;
 import com.inbuy.ucommunity.data.Area;
 import com.inbuy.ucommunity.data.BigCategory;
@@ -175,6 +178,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     private boolean mCatePanelAnimating;
 
+    // 定位相关
+    LocationClient mLocClient;
+    public MyLocationListenner myListener = new MyLocationListenner();
+    LocationData locData = null;
+
     private double mGpsLng = -1;
     private double mGpsLat = -1;
     private String mGpsRange;
@@ -225,28 +233,59 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             mAreaLayout.setVisibility(View.VISIBLE);
         }
 
-        initLocation();
+        initBDLocation();
     }
 
-    private void initLocation() {
-        if (mType != TYPE_NEARBY) {
-            return;
+    // private void initLocation() {
+    // if (mType != TYPE_NEARBY) {
+    // return;
+    // }
+    //
+    // mLocationManager = (LocationManager)
+    // getSystemService(Context.LOCATION_SERVICE);
+    //
+    // if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+    // {
+    // mProviderName = LocationManager.NETWORK_PROVIDER;
+    // } else if
+    // (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+    // mProviderName = LocationManager.GPS_PROVIDER;
+    // } else {
+    // Toast.makeText(this, "GPS is not enabled.", Toast.LENGTH_SHORT).show();
+    // return;
+    //
+    // }
+    //
+    // if (mType == TYPE_NEARBY) {
+    // if (!TextUtils.isEmpty(mProviderName)) {
+    // mLocationManager.requestLocationUpdates(mProviderName, 0, 0,
+    // mLocationListener);
+    // }
+    // }
+    // }
+
+    private void initBDLocation() {
+        if (mType == TYPE_NEARBY) {
+            UCommApplication app = (UCommApplication) this.getApplication();
+            if (app.mBMapManager == null) {
+                app.mBMapManager = new BMapManager(this);
+                app.mBMapManager.init(UCommApplication.strKey,
+                        new UCommApplication.MyGeneralListener());
+            }
+
+            mLocClient = new LocationClient(this);
+            mLocClient.registerLocationListener(myListener);
+            LocationClientOption option = new LocationClientOption();
+            option.setOpenGps(true);// 打开gps
+            option.setCoorType("bd09ll"); // 设置坐标类型
+            option.setScanSpan(500);
+
+            option.setAddrType("all");// 返回的定位结果包含地址信息
+            option.disableCache(true);// 禁止启用缓存定位
+
+            mLocClient.setLocOption(option);
+            mLocClient.start();
         }
-
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            mProviderName = LocationManager.NETWORK_PROVIDER;
-        } else if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            mProviderName = LocationManager.GPS_PROVIDER;
-        } else {
-            Toast.makeText(this, "GPS is not enabled.", Toast.LENGTH_SHORT).show();
-            return;
-
-        }
-
-        Location location = mLocationManager.getLastKnownLocation(mProviderName);
-        updateWithNewLocation(location);
     }
 
     private void initViewsRes() {
@@ -510,7 +549,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         // }
 
         MenuItem locationItem = menu.findItem(R.id.menu_item_location);
-        if (mType == TYPE_RECOMMAND || mType == TYPE_POPULATE || mType == TYPE_SEARCH) {
+        if (mType == TYPE_NEARBY) {
             locationItem.setVisible(true);
         } else {
             locationItem.setVisible(false);
@@ -687,56 +726,80 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
     };
 
-    private void updateWithNewLocation(Location location) {
-        Log.d(TAG, "updateWithNewLocation: location = " + location);
+    // private void updateWithNewLocation(Location location) {
+    // Log.d(TAG, "updateWithNewLocation: location = " + location);
+    // if (location == null) {
+    // return;
+    // }
+    //
+    // mGpsLng = location.getLongitude();
+    // mGpsLat = location.getLatitude();
+    // Log.d(TAG, "updateWithNewLocation: mGpsLng = " + mGpsLng + " mGpsLat = "
+    // + mGpsLat);
+    //
+    // StringBuffer sb = new StringBuffer();
+    // sb.append(mGpsLng).append(", ").append(mGpsLat);
+    // mLngLatView.setText(sb.toString());
+    //
+    // request();
+    // }
+
+    private void updateWithNewLocation(BDLocation location) {
+        Log.v(TAG, "updateWithNewLocation: location = " + location);
         if (location == null) {
             return;
         }
 
         mGpsLng = location.getLongitude();
         mGpsLat = location.getLatitude();
-        Log.d(TAG, "updateWithNewLocation: mGpsLng = " + mGpsLng + " mGpsLat = " + mGpsLat);
+        String locationName = location.getAddrStr();
+        Log.v(TAG, "updateWithNewLocation: mGpsLng = " + mGpsLng + " mGpsLat = " + mGpsLat
+                + " locationName = " + location);
 
         StringBuffer sb = new StringBuffer();
         sb.append(mGpsLng).append(", ").append(mGpsLat);
         mLngLatView.setText(sb.toString());
+        mLocationNameView.setText(locationName);
 
         request();
     }
 
-    private LocationListener mLocationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-            // TODO Auto-generated method stub
-            Log.d(TAG, "mLocationListener/onLocationChanged: location = " + location);
-            updateWithNewLocation(location);
-            mLocationManager.removeUpdates(mLocationListener);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            // TODO Auto-generated method stub
-            Log.d(TAG, "mLocationListener/onProviderDisabled: provider = " + provider);
-            updateWithNewLocation(null);
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            // TODO Auto-generated method stub
-            Log.d(TAG, "mLocationListener/onProviderEnabled: provider = " + provider);
-
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            // TODO Auto-generated method stub
-            Log.d(TAG, "mLocationListener/onStatusChanged: provider = " + provider);
-
-        }
-
-    };
+    // private LocationListener mLocationListener = new LocationListener() {
+    //
+    // @Override
+    // public void onLocationChanged(Location location) {
+    // // TODO Auto-generated method stub
+    // Log.d(TAG, "mLocationListener/onLocationChanged: location = " +
+    // location);
+    // updateWithNewLocation(location);
+    // mLocationManager.removeUpdates(mLocationListener);
+    // }
+    //
+    // @Override
+    // public void onProviderDisabled(String provider) {
+    // // TODO Auto-generated method stub
+    // Log.d(TAG, "mLocationListener/onProviderDisabled: provider = " +
+    // provider);
+    // updateWithNewLocation(null);
+    //
+    // }
+    //
+    // @Override
+    // public void onProviderEnabled(String provider) {
+    // // TODO Auto-generated method stub
+    // Log.d(TAG, "mLocationListener/onProviderEnabled: provider = " +
+    // provider);
+    //
+    // }
+    //
+    // @Override
+    // public void onStatusChanged(String provider, int status, Bundle extras) {
+    // // TODO Auto-generated method stub
+    // Log.d(TAG, "mLocationListener/onStatusChanged: provider = " + provider);
+    //
+    // }
+    //
+    // };
 
     public Location getLocation(Context context) {
         LocationManager locMan = (LocationManager) context
@@ -783,6 +846,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                 onBack();
                 break;
             case R.id.menu_item_location:
+                gotoMapActivity();
                 break;
             case R.id.action_search:
                 gotoSearchActivity();
@@ -805,6 +869,18 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USERS, this);
         DataUpdater.unregisterDataUpdateListener(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, this);
 
+        if (mLocClient != null)
+            mLocClient.stop();
+
+        if (mType == TYPE_NEARBY) {
+            mLocClient.unRegisterLocationListener(myListener);
+        }
+
+        UCommApplication app = (UCommApplication) this.getApplication();
+        if (app.mBMapManager != null) {
+            app.mBMapManager.destroy();
+            app.mBMapManager = null;
+        }
         DataModel.clearUserList();
     }
 
@@ -812,9 +888,9 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     protected void onPause() {
         // TODO Auto-generated method stub
         if (mType == TYPE_NEARBY) {
-            if (mLocationManager != null) {
-                mLocationManager.removeUpdates(mLocationListener);
-            }
+            // if (mLocationManager != null) {
+            // mLocationManager.removeUpdates(mLocationListener);
+            // }
         }
         super.onPause();
     }
@@ -822,11 +898,12 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub
-        if (mType == TYPE_NEARBY) {
-            if (!TextUtils.isEmpty(mProviderName)) {
-                mLocationManager.requestLocationUpdates(mProviderName, 0, 0, mLocationListener);
-            }
-        }
+        // if (mType == TYPE_NEARBY) {
+        // if (!TextUtils.isEmpty(mProviderName)) {
+        // mLocationManager.requestLocationUpdates(mProviderName, 0, 0,
+        // mLocationListener);
+        // }
+        // }
         super.onResume();
     }
 
@@ -1036,6 +1113,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
         Intent intent = new Intent();
         intent.setClass(this, SearchActivity.class);
         intent.putExtra(Const.EXTRA_CITY_ID, mCurrentCityId);
+        this.startActivity(intent);
+    }
+
+    private void gotoMapActivity() {
+        Intent intent = new Intent(this, UComMapActivity.class);
         this.startActivity(intent);
     }
 
@@ -1564,6 +1646,37 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             case DataUpdater.DATA_UPDATE_STATUS_ERROR:
                 mLoadingBar.setVisibility(View.GONE);
                 break;
+        }
+    }
+
+    /**
+     * 监听函数，又新位置的时候，格式化成字符串，输出到屏幕中
+     */
+    public class MyLocationListenner implements BDLocationListener {
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+            Log.d(TAG, "MyLocationListenner/onReceiveLocation: location = " + location);
+            if (location == null)
+                return;
+
+            updateWithNewLocation(location);
+
+            // locData.latitude = location.getLatitude();
+            // locData.longitude = location.getLongitude();
+            // locData.accuracy = location.getRadius();
+            // locData.direction = location.getDerect();
+            // myLocationOverlay.setData(locData);
+            // mMapView.refresh();
+            // mMapController.animateTo(new GeoPoint((int) (locData.latitude *
+            // 1e6),
+            // (int) (locData.longitude * 1e6)), mHandler.obtainMessage(1));
+        }
+
+        public void onReceivePoi(BDLocation poiLocation) {
+            Log.d(TAG, "MyLocationListenner/onReceivePoi: poiLocation = " + poiLocation);
+            if (poiLocation == null) {
+                return;
+            }
         }
     }
 
