@@ -278,6 +278,7 @@ public class Util {
             strs = strs.replace("\n\r", "");
             strs = strs.replace("&rdquo;", "");
             strs = strs.replace("&ldquo;", "");
+            strs = strs.replace("&dash;", "");
         }
 
         return strs;
