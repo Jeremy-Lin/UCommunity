@@ -4,8 +4,9 @@ package com.inbuy.ucommunity.ui;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,9 +15,11 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,8 +46,9 @@ import com.inbuy.ucommunity.data.User;
 import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
+import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.Util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +81,7 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
     private double mLongitude;
     private int mRange;
 
-    OverlayTest ov = null;
+    UComOverlay ov = null;
 
     public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
 
@@ -130,12 +134,17 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
 
         mGeoList.clear();
 
-        for (User user : mUserList) {
+        for (int index = 0; index < mUserList.size(); index++) {
+            User user = mUserList.get(index);
             double lat = Double.valueOf(user.mLat);
             double lon = Double.valueOf(user.mLng);
             OverlayItem item = new OverlayItem(new GeoPoint((int) (lat * 1E6), (int) (lon * 1E6)),
                     user.mName, user.mAddress);
-            item.setMarker(getResources().getDrawable(R.drawable.icon_marka));
+
+            Bitmap markerBitmap = getViewBitmap(getMarkerView(index));
+            Drawable drawable = new BitmapDrawable(markerBitmap);
+
+            item.setMarker(drawable);
             mGeoList.add(item);
         }
     }
@@ -252,8 +261,8 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
         mMapView.getOverlays().add(myLocationOverlay);
         myLocationOverlay.enableCompass();
 
-        Drawable marker = this.getResources().getDrawable(R.drawable.icon_marka);
-        ov = new OverlayTest(marker, this, mMapView);
+        Drawable marker = this.getResources().getDrawable(R.drawable.ic_map_marker);
+        ov = new UComOverlay(marker, this, mMapView);
 
         if (mGeoList != null && mGeoList.size() > 0) {
             ov.addItem(mGeoList);
@@ -261,6 +270,43 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
 
         mMapView.getOverlays().add(ov);
         mMapView.refresh();
+    }
+
+    public View getMarkerView(int index) {
+        View view = getLayoutInflater().inflate(R.layout.map_marker_item, null);
+        TextView textIndex = (TextView) view.findViewById(R.id.txt_index);
+
+        textIndex.setText(String.valueOf(index));
+        return view;
+    }
+
+    /**
+     * 把一个xml布局文件转化成view
+     */
+    public View getView(String title, String text, int starCount) {
+        View view = getLayoutInflater().inflate(R.layout.map_user_item, null);
+        TextView text_title = (TextView) view.findViewById(R.id.txt_name);
+        TextView text_text = (TextView) view.findViewById(R.id.txt_tag);
+        ImageView iv = (ImageView) view.findViewById(R.id.img_star);
+
+        int resId = Util.getStarsResourceId(starCount);
+        iv.setImageResource(resId);
+        text_title.setText(title);
+        text_text.setText(text);
+        return view;
+    }
+
+    /**
+     * 把一个view转化成bitmap对象
+     */
+    public static Bitmap getViewBitmap(View view) {
+        view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.buildDrawingCache();
+        Bitmap bitmap = view.getDrawingCache();
+
+        return bitmap;
     }
 
     @Override
@@ -335,69 +381,60 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
         // TODO Auto-generated method stub
 
     }
-}
 
-class OverlayTest extends ItemizedOverlay<OverlayItem> {
-    public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
-    private Context mContext = null;
-    static PopupOverlay pop = null;
-
-    Toast mToast = null;
-
-    public OverlayTest(Drawable marker, Context context, MapView mapView) {
-        super(marker, mapView);
-        this.mContext = context;
-        pop = new PopupOverlay(UComMapActivity.mMapView, new PopupClickListener() {
-
-            @Override
-            public void onClickedPopup(int index) {
-                if (null == mToast)
-                    mToast = Toast.makeText(mContext, "popup item :" + index + " is clicked.",
-                            Toast.LENGTH_SHORT);
-                else
-                    mToast.setText("popup item :" + index + " is clicked.");
-                mToast.show();
-            }
-        });
+    private void gotoUserIntroduceScreen(int position) {
+        if (position >= 0 && position < mUserList.size()) {
+            Intent intent = new Intent();
+            intent.setClass(this, UserIntroduceActivity.class);
+            intent.putExtra(Const.EXTRA_USER_ID, mUserList.get(position).mId);
+            this.startActivity(intent);
+        }
     }
 
-    protected boolean onTap(int index) {
-        System.out.println("item onTap: " + index);
+    class UComOverlay extends ItemizedOverlay<OverlayItem> {
+        public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
+        private Context mContext = null;
+        private PopupOverlay pop = null;
+        private int mCurIndex;
 
-        Bitmap[] bmps = new Bitmap[3];
-        if (index % 2 == 0) {
-            try {
-                bmps[0] = BitmapFactory.decodeStream(mContext.getAssets().open("marker1.png"));
-                bmps[1] = BitmapFactory.decodeStream(mContext.getAssets().open("marker2.png"));
-                bmps[2] = BitmapFactory.decodeStream(mContext.getAssets().open("marker3.png"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
-                bmps[2] = BitmapFactory.decodeStream(mContext.getAssets().open("marker1.png"));
-                bmps[1] = BitmapFactory.decodeStream(mContext.getAssets().open("marker2.png"));
-                bmps[0] = BitmapFactory.decodeStream(mContext.getAssets().open("marker3.png"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Toast mToast = null;
+
+        public UComOverlay(Drawable marker, Context context, MapView mapView) {
+            super(marker, mapView);
+            this.mContext = context;
+            pop = new PopupOverlay(UComMapActivity.mMapView, new PopupClickListener() {
+
+                @Override
+                public void onClickedPopup(int index) {
+                    gotoUserIntroduceScreen(mCurIndex);
+                }
+            });
         }
 
-        pop.showPopup(bmps, getItem(index).getPoint(), 32);
-        if (null == mToast)
-            mToast = Toast.makeText(mContext, getItem(index).getTitle(), Toast.LENGTH_SHORT);
-        else
-            mToast.setText(getItem(index).getTitle());
-        mToast.show();
+        protected boolean onTap(int index) {
+            if (mUserList == null || index < 0 || index >= mUserList.size()) {
+                return false;
+            }
 
-        return true;
-    }
+            mCurIndex = index;
 
-    public boolean onTap(GeoPoint pt, MapView mapView) {
-        if (pop != null) {
-            pop.hidePop();
+            User user = mUserList.get(index);
+
+            int count = Integer.valueOf(user.mStar);
+            View v = UComMapActivity.this.getView(user.mName, user.mTag, count);
+            Bitmap bmps = UComMapActivity.getViewBitmap(v);
+
+            pop.showPopup(bmps, getItem(index).getPoint(), 32);
+
+            return true;
         }
-        super.onTap(pt, mapView);
-        return false;
+
+        public boolean onTap(GeoPoint pt, MapView mapView) {
+            if (pop != null) {
+                pop.hidePop();
+            }
+            super.onTap(pt, mapView);
+            return false;
+        }
     }
 }

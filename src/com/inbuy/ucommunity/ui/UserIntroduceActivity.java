@@ -64,6 +64,9 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
 
     private User mUser;
 
+    private String mLng;
+    private String mLat;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -147,6 +150,7 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
             int id = v.getId();
             switch (id) {
                 case R.id.layout_address:
+                    launchMap();
                     break;
                 case R.id.layout_user_phone:
                     makeCall(mUserPhoneView.getText().toString());
@@ -175,6 +179,9 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
     private void refresh() {
         mUser = DataModel.getUserItem();
         if (mUser != null) {
+            mLng = mUser.mLng;
+            mLat = mUser.mLat;
+
             mTitleUserNameView.setText(mUser.mName);
             mTitleUserDesView.setText(mUser.mDes);
             mTitleUserTagView.setText(mUser.mTag);
@@ -247,6 +254,24 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         intent.setClass(this, UserDetailActivity.class);
         intent.putExtra(Const.EXTRA_ACTION_VIEW_TYPE, type);
         intent.putExtra(Const.EXTRA_USER_ID, mUser.mId);
+        this.startActivity(intent);
+    }
+
+    private void launchMap() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("geo:").append(0).append(",").append(0);
+
+        String query = mUser.mName;
+        int index = query.indexOf(" ");
+
+        if (index != -1) {
+            query = mUser.mName.substring(0, index);
+        }
+
+        sb.append("?q=").append("(").append(mLat).append(",").append(mLng).append(")")
+                .append(query);
+        Uri uri = Uri.parse(sb.toString());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         this.startActivity(intent);
     }
 

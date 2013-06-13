@@ -30,8 +30,8 @@ public class NetUtil {
     public static final String PARAM_NAME_RQ = "rq";
 
     // url and actions
-    public static final String URL_SERVER = "Http://www.Inbuy360.com/";
-    public static final String URL_API_SERVER = "Http://www.Inbuy360.com/api.php/Api/";
+    public static final String URL_SERVER = "Http://befor.inbuy360.com/";
+    public static final String URL_API_SERVER = "Http://befor.inbuy360.com/api.php/Api/";
     public static final String ACTION_GET_USER = "getUser";
     public static final String ACTION_GET_CITY = "getCity";
     public static final String ACTION_GET_AREA = "getArea";
