@@ -891,6 +891,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             // if (mLocationManager != null) {
             // mLocationManager.removeUpdates(mLocationListener);
             // }
+
+            if (mLocClient.isStarted()) {
+                mLocClient.stop();
+            }
         }
         super.onPause();
     }
@@ -898,12 +902,16 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub
-        // if (mType == TYPE_NEARBY) {
-        // if (!TextUtils.isEmpty(mProviderName)) {
-        // mLocationManager.requestLocationUpdates(mProviderName, 0, 0,
-        // mLocationListener);
-        // }
-        // }
+        if (mType == TYPE_NEARBY) {
+            // if (!TextUtils.isEmpty(mProviderName)) {
+            // mLocationManager.requestLocationUpdates(mProviderName, 0, 0,
+            // mLocationListener);
+            // }
+
+            if (!mLocClient.isStarted()) {
+                mLocClient.start();
+            }
+        }
         super.onResume();
     }
 

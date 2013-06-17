@@ -87,7 +87,7 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
 
     Handler mHandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
-            Toast.makeText(UComMapActivity.this, "msg:" + msg.what, Toast.LENGTH_SHORT).show();
+            // TODO
         };
     };
 
@@ -190,12 +190,18 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
     @Override
     protected void onPause() {
         mMapView.onPause();
+        if (mLocClient.isStarted()) {
+            mLocClient.stop();
+        }
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         mMapView.onResume();
+        if (!mLocClient.isStarted()) {
+            mLocClient.start();
+        }
         super.onResume();
     }
 

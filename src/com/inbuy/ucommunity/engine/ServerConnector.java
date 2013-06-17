@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -276,28 +277,41 @@ public class ServerConnector implements Runnable {
     protected static String retrieveInputStream(HttpEntity httpEntity)
             throws UnsupportedEncodingException, IllegalStateException, IOException {
 
-        int length = (int) httpEntity.getContentLength();
-        Log.d(TAG, "retrieveInputStream: length = " + length);
+        // int length = (int) httpEntity.getContentLength();
+        // Log.d(TAG, "retrieveInputStream: length = " + length);
 
         // the number of bytes of the content, or a negative number if unknown.
         // If the content length is known but exceeds Long.MAX_VALUE, a negative
         // number is returned.
         // length==-1，下面这句报错，println needs a message
-        if (length < 0) {
-            Log.e(TAG, "length = " + length);
-            length = 10000;
-        } else if (length == 0) {
-            return null;
+        // if (length < 0) {
+        // Log.e(TAG, "length = " + length);
+        // length = 1000000;
+        // } else if (length == 0) {
+        // return null;
+        // }
+        // StringBuffer sb = new StringBuffer(length);
+        // InputStreamReader inputStreamReader = new
+        // InputStreamReader(httpEntity.getContent(),
+        // HTTP.UTF_8);
+        // char buffer[] = new char[length];
+        // int count;
+        // while (length > 0 && (count = inputStreamReader.read(buffer, 0,
+        // length - 1)) > 0) {
+        // sb.append(buffer, 0, count);
+        // }
+        //
+        // inputStreamReader.close();
+        InputStream is = httpEntity.getContent();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, HTTP.UTF_8), 8);
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
         }
-        StringBuffer stringBuffer = new StringBuffer(length);
-        InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(),
-                HTTP.UTF_8);
-        char buffer[] = new char[length];
-        int count;
-        while (length > 0 && (count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
-            stringBuffer.append(buffer, 0, count);
-        }
-        return stringBuffer.toString();
+        is.close();
+
+        return sb.toString();
     }
 
     @Override
