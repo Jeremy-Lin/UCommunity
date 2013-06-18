@@ -8,6 +8,7 @@
     <string name="error_network">Network disabled, please check.</string>
     <string name="error_gps">Network disabled, please check.</string>
     <string name="empty_userlist">No users</string>
+    <string name="loading">Waiting</string>
     <string name="empty_records">No records</string>
     <string name="clear_search_records">Clear records</string>
     <string name="about_title">About us</string>

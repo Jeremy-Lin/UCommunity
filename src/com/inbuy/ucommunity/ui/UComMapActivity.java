@@ -367,7 +367,7 @@ public class UComMapActivity extends Activity implements DataUpdateListener {
             myLocationOverlay.setData(locData);
             mMapView.refresh();
             mMapController.animateTo(new GeoPoint((int) (locData.latitude * 1e6),
-                    (int) (locData.longitude * 1e6)), mHandler.obtainMessage(1));
+                    (int) (locData.longitude * 1e6)));
         }
 
         public void onReceivePoi(BDLocation poiLocation) {

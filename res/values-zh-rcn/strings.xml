@@ -22,6 +22,7 @@
     <string name="all_area">全部地区</string>
     <string name="all_category">全部分类</string>
     <string name="empty_userlist">没有商户</string>
+    <string name="loading">请稍后</string>
     <string name="user_phone">商户电话: %s</string>
     <string name="credit_hot_line">信用卡分期热线: %s</string>
     <string name="user_address">地址: %s</string>

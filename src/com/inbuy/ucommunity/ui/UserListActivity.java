@@ -80,7 +80,9 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     private ListView mUserListView;
 
     private TextView mLoadingMoreView;
+    private TextView mEmptyView;
     private ProgressBar mLoadingMoreBar;
+    private View mFooterView;
 
     private ProgressBar mLoadingBar;
 
@@ -629,10 +631,10 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             arg.put(NetUtil.PARAM_NAME_LONG, mGpsRange);
         }
 
-        // if (mLimitIndex != -1) {
-        // arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
-        // arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
-        // }
+        if (mLimitIndex != -1) {
+            arg.put(NetUtil.PARAM_NAME_LIMIT, String.valueOf(mLimitIndex));
+            arg.put(NetUtil.PARAM_NAME_COUNT, String.valueOf(Const.USER_COUNT));
+        }
 
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USERS, arg);
     }
@@ -687,27 +689,28 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             request();
         }
 
-        mUserListView.setEmptyView(findViewById(android.R.id.empty));
+        mEmptyView = (TextView) findViewById(android.R.id.empty);
 
-        if (mType != TYPE_NEARBY) {
-            View foot = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                    .inflate(R.layout.user_list_footer, null, false);
+        mUserListView.setEmptyView(mEmptyView);
 
-            mLoadingMoreView = (TextView) foot.findViewById(R.id.txt_loading_more);
-            mLoadingMoreBar = (ProgressBar) foot.findViewById(R.id.progressbar_loading);
+        mFooterView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                .inflate(R.layout.user_list_footer, null, false);
 
-            mUserListView.addFooterView(foot);
+        mLoadingMoreView = (TextView) mFooterView.findViewById(R.id.txt_loading_more);
+        mLoadingMoreBar = (ProgressBar) mFooterView.findViewById(R.id.progressbar_loading);
 
-            foot.setOnClickListener(new OnClickListener() {
+        mUserListView.addFooterView(mFooterView);
 
-                @Override
-                public void onClick(View v) {
-                    mIsLoadingMore = true;
-                    request();
-                }
+        mFooterView.setOnClickListener(new OnClickListener() {
 
-            });
-        }
+            @Override
+            public void onClick(View v) {
+                mIsLoadingMore = true;
+                request();
+            }
+
+        });
+
         mUserListAdapter = new UserListAdapter(this, mUserList, mHanlder);
         mUserListView.setAdapter(mUserListAdapter);
         mUserListView.setOnItemClickListener(mUserItemClickListener);
@@ -987,6 +990,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                 if (mUserList == null || mUserList.size() == 0) {
                     mUserListView.setVisibility(View.INVISIBLE);
                 }
+
+                mEmptyView.setText(R.string.loading);
                 mLoading = true;
                 if (mIsLoadingMore) {
                     mLoadingMoreView.setVisibility(View.GONE);
@@ -1002,14 +1007,30 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
                 } else {
                     mLoadingBar.setVisibility(View.GONE);
                 }
+
+                int preCount = 0;
+                if (mLimitIndex != 0 && mUserList != null) {
+                    preCount = mUserList.size();
+                }
                 setUserList();
+                int count = 0;
+                if (mUserList != null) {
+                    count = mUserList.size();
+                }
 
                 if (mUserList == null || mUserList.size() == 0) {
-
+                    mEmptyView.setText(R.string.empty_userlist);
                     // mUserListView.setVisibility(View.INVISIBLE);
                 } else {
                     mLimitIndex += Const.USER_COUNT;
                     mUserListView.setVisibility(View.VISIBLE);
+
+                    if (count - preCount < Const.USER_COUNT) {
+                        mUserListView.removeFooterView(mFooterView);
+                    } else if (mUserListView.getFooterViewsCount() == 0) {
+                        mUserListView.addFooterView(mFooterView);
+                    }
+
                 }
 
                 mIsLoadingMore = false;
