@@ -11,6 +11,10 @@ import com.baidu.mapapi.MKGeneralListener;
 import com.baidu.mapapi.map.MKEvent;
 import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.util.Util;
+import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 public class UCommApplication extends Application {
     private static final String TAG = "UCommApplication";
@@ -29,6 +33,8 @@ public class UCommApplication extends Application {
 
         Log.i(TAG, "Application onCreate()");
         initEngineManager(this);
+
+        initImageLoader(getApplicationContext());
     }
 
     @Override
@@ -43,6 +49,9 @@ public class UCommApplication extends Application {
             mBMapManager.destroy();
             mBMapManager = null;
         }
+
+        ImageLoader.getInstance().clearMemoryCache();
+        ImageLoader.getInstance().clearDiscCache();
     }
 
     public void initEngineManager(Context context) {
@@ -58,6 +67,24 @@ public class UCommApplication extends Application {
 
     public static UCommApplication getInstance() {
         return mInstance;
+    }
+
+    public static void initImageLoader(Context context) {
+        // This configuration tuning is custom. You can tune every option, you
+        // may tune some of them,
+        // or you can create default configuration by
+        // ImageLoaderConfiguration.createDefault(this);
+        // method.
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
+                .threadPriority(Thread.NORM_PRIORITY - 2).denyCacheImageMultipleSizesInMemory()
+                .discCacheFileNameGenerator(new Md5FileNameGenerator())
+                .tasksProcessingOrder(QueueProcessingType.LIFO).writeDebugLogs() // Remove
+                                                                                 // for
+                                                                                 // release
+                                                                                 // app
+                .build();
+        // Initialize ImageLoader with configuration.
+        ImageLoader.getInstance().init(config);
     }
 
     // 常用事件监听，用来处理通常的网络错误，授权验证错误等

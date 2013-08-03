@@ -52,6 +52,8 @@ import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
 import com.inbuy.ucommunity.util.Const;
 import com.inbuy.ucommunity.util.NetUtil;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -713,6 +715,7 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
 
         mUserListAdapter = new UserListAdapter(this, mUserList, mHanlder);
         mUserListView.setAdapter(mUserListAdapter);
+        applyScrollListener();
         mUserListView.setOnItemClickListener(mUserItemClickListener);
 
     }
@@ -746,6 +749,11 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
     //
     // request();
     // }
+
+    private void applyScrollListener() {
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        mUserListView.setOnScrollListener(new PauseOnScrollListener(imageLoader, true, true));
+    }
 
     private void updateWithNewLocation(BDLocation location) {
         Log.v(TAG, "updateWithNewLocation: location = " + location);
@@ -885,6 +893,8 @@ public class UserListActivity extends Activity implements DataUpdateListener, On
             app.mBMapManager = null;
         }
         DataModel.clearUserList();
+
+        AnimateFirstDisplayListener.displayedImages.clear();
     }
 
     @Override

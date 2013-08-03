@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,7 +26,12 @@ import com.inbuy.ucommunity.engine.DataModel;
 import com.inbuy.ucommunity.engine.DataUpdateListener;
 import com.inbuy.ucommunity.engine.DataUpdater;
 import com.inbuy.ucommunity.util.Const;
+import com.inbuy.ucommunity.util.NetUtil;
 import com.inbuy.ucommunity.util.Util;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 public class UserIntroduceActivity extends Activity implements DataUpdateListener {
     private static final String TAG = "UserIntroduceActivity";
@@ -67,6 +71,10 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
     private String mLng;
     private String mLat;
 
+    DisplayImageOptions mOptions;
+
+    private ImageLoadingListener mAnimateFirstListener = new AnimateFirstDisplayListener();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -83,6 +91,11 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         mUserId = this.getIntent().getStringExtra(Const.EXTRA_USER_ID);
 
         DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER, mUserId);
+
+        mOptions = new DisplayImageOptions.Builder().showStubImage(R.drawable.user_default)
+                .showImageForEmptyUri(R.drawable.user_default)
+                .showImageOnFail(R.drawable.user_default).cacheInMemory(true).cacheOnDisc(true)
+                .displayer(new RoundedBitmapDisplayer(10)).build();
     }
 
     @SuppressLint("NewApi")
@@ -209,25 +222,40 @@ public class UserIntroduceActivity extends Activity implements DataUpdateListene
         }
     }
 
+    // private void setPhotoView() {
+    // Drawable drawable = null;
+    //
+    // if (mTitleUserPhotoView != null && mUser != null) {
+    // drawable = Util.getUserPhotoDrawable(this, mUser.mId,
+    // R.drawable.user_default);
+    //
+    // if (drawable != null) {
+    // mTitleUserPhotoView.setImageDrawable(drawable);
+    // } else {
+    // mTitleUserPhotoView.setImageResource(R.drawable.user_default);
+    //
+    // String photoUrl = mUser.mImageUrl;
+    // int index = photoUrl.indexOf(";");
+    // String imgUrl = photoUrl.substring(0, index);
+    // Object[] args = {
+    // mUser.mId, imgUrl
+    // };
+    // DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO,
+    // args);
+    // }
+    // }
+    //
+    // }
+
     private void setPhotoView() {
-        Drawable drawable = null;
 
         if (mTitleUserPhotoView != null && mUser != null) {
-            drawable = Util.getUserPhotoDrawable(this, mUser.mId, R.drawable.user_default);
+            String photoUrl = mUser.mImageUrl;
+            int index = photoUrl.indexOf(";");
+            String imgUrl = photoUrl.substring(0, index);
 
-            if (drawable != null) {
-                mTitleUserPhotoView.setImageDrawable(drawable);
-            } else {
-                mTitleUserPhotoView.setImageResource(R.drawable.user_default);
-
-                String photoUrl = mUser.mImageUrl;
-                int index = photoUrl.indexOf(";");
-                String imgUrl = photoUrl.substring(0, index);
-                Object[] args = {
-                        mUser.mId, imgUrl
-                };
-                DataUpdater.requestDataUpdate(DataUpdater.DATA_UPDATE_TYPE_USER_PHOTO, args);
-            }
+            ImageLoader.getInstance().displayImage(NetUtil.getPhotoUrl(imgUrl),
+                    mTitleUserPhotoView, mOptions, mAnimateFirstListener);
         }
 
     }

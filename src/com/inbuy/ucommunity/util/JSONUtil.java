@@ -190,6 +190,7 @@ public class JSONUtil {
 
         user.mPhone = resultObject.getString("phone");
         user.mCardPhone = resultObject.getString("card_phone");
+        user.mImageUrl = resultObject.getString("img");
 
         Log.d(TAG, "parseResonseUserList: " + " name = " + user.mName + " id = " + user.mId);
 
